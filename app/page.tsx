@@ -1,14 +1,8 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { HeroSearch } from "@/components/landing/hero-search";
+import { HeroWithScrollPadding } from "@/components/landing/hero-with-scroll-padding";
+import { SelectorAndFeaturedRentals } from "@/components/landing/selector-and-featured-rentals";
 
 const valueProps = [
   {
@@ -25,43 +19,43 @@ const valueProps = [
   },
 ];
 
-const howItWorks = [
-  { step: 1, title: "Search", body: "Find rentals by keyword or browse the map." },
-  { step: 2, title: "View details", body: "Check price, availability, and reviews." },
-  { step: 3, title: "Book & pay", body: "Confirm your dates and complete checkout." },
-];
-
-const featuredListings = [
-  { id: "1", title: "Downtown loft", description: "Spacious loft, 2 guests", price: "$120", badge: "Popular" },
-  { id: "2", title: "Cozy cabin", description: "Lake view, 4 guests", price: "$95", badge: "New" },
-  { id: "3", title: "City studio", description: "Central location, 2 guests", price: "$85", badge: null },
-];
-
 export default function Home() {
   return (
     <div className="min-h-screen w-full">
-      {/* Hero */}
-      <section className="border-b bg-gradient-to-b from-muted/50 to-background py-20 md:py-28">
-        <div className="container mx-auto max-w-7xl text-center">
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-            Find the right rental
-          </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-            Search by list or map. Compare prices, read reviews, and book in one place.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Button asChild size="lg" className="min-h-11 min-w-[44px]">
-              <Link href="/search">Search rentals</Link>
-            </Button>
-            <Button variant="outline" size="lg" asChild className="min-h-11 min-w-[44px]">
-              <Link href="/search/map">View map</Link>
-            </Button>
+      {/* Hero - background same width as header content (logo to sign up) */}
+      <HeroWithScrollPadding aria-labelledby="hero-heading">
+        <div className="container mx-auto w-full max-w-7xl">
+          <div
+            className="relative w-full overflow-hidden rounded-3xl bg-[#0f2744] bg-cover bg-center bg-no-repeat pb-16 pt-14 md:pb-20 md:pt-18"
+            style={{
+              backgroundImage: "url(https://e47b698e59208764aee00d1d8e14313c.cdn.bubble.io/f1770316859498x537247407942397900/car.webp)",
+            }}
+          >
+            <div className="absolute inset-0 bg-black/25" aria-hidden />
+            <div className="relative text-center">
+              <h1
+                id="hero-heading"
+                className="text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl"
+              >
+                Skip the rental counter
+              </h1>
+              <p className="mx-auto mt-4 max-w-2xl text-lg text-white/90">
+                Rent just about any place or thing, just about anywhere.
+              </p>
+              <div className="mt-8 flex flex-col items-center">
+                <HeroSearch />
+              </div>
+            </div>
           </div>
         </div>
-      </section>
+      </HeroWithScrollPadding>
+
+      <div className="container mx-auto w-full max-w-7xl">
+        <SelectorAndFeaturedRentals />
+      </div>
 
       {/* Value props */}
-      <section className="border-b py-16 md:py-20" aria-labelledby="value-props-heading">
+      <section id="value-props" className="py-16 md:py-20" aria-labelledby="value-props-heading">
         <div className="container mx-auto max-w-7xl">
           <h2 id="value-props-heading" className="sr-only">
             Why use Rentals
@@ -73,76 +67,6 @@ export default function Home() {
                 <p className="text-muted-foreground">{description}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section className="border-b py-16 md:py-20" id="how-it-works" aria-labelledby="how-heading">
-        <div className="container mx-auto max-w-7xl">
-          <h2 id="how-heading" className="text-2xl font-bold md:text-3xl">
-            How it works
-          </h2>
-          <ol className="mt-8 grid gap-8 md:grid-cols-3">
-            {howItWorks.map(({ step, title, body }) => (
-              <li key={step} className="flex gap-4">
-                <span
-                  className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground"
-                  aria-hidden
-                >
-                  {step}
-                </span>
-                <div>
-                  <h3 className="font-semibold">{title}</h3>
-                  <p className="text-muted-foreground">{body}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      {/* Featured listings strip */}
-      <section className="border-b py-16 md:py-20" aria-labelledby="featured-heading">
-        <div className="container mx-auto max-w-7xl">
-          <h2 id="featured-heading" className="text-2xl font-bold md:text-3xl">
-            Featured rentals
-          </h2>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {featuredListings.map(({ id, title, description, price, badge }) => (
-              <Card key={id} className="transition-shadow hover:shadow-md">
-                <CardHeader className="pb-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <CardTitle className="text-base">
-                      <Link
-                        href={`/rental/${id}`}
-                        className="focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring focus-visible:rounded-md hover:underline"
-                      >
-                        {title}
-                      </Link>
-                    </CardTitle>
-                    {badge && (
-                      <Badge variant={badge === "New" ? "secondary" : "default"}>{badge}</Badge>
-                    )}
-                  </div>
-                  <CardDescription>{description}</CardDescription>
-                </CardHeader>
-                <CardContent className="pb-2">
-                  <p className="text-lg font-semibold tabular-nums">{price}</p>
-                  <p className="text-xs text-muted-foreground">per night</p>
-                </CardContent>
-                <CardFooter>
-                  <Button asChild size="sm" className="w-full min-h-[44px]">
-                    <Link href={`/rental/${id}`}>View details</Link>
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-          <div className="mt-8 text-center">
-            <Button variant="outline" asChild>
-              <Link href="/search">View all rentals</Link>
-            </Button>
           </div>
         </div>
       </section>

@@ -1,0 +1,111 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import {
+  LayoutGrid,
+  Tag,
+  Car,
+  Bus,
+  Package,
+  Sparkles,
+  Gem,
+  type LucideIcon,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const OPTIONS: { id: string; label: string; icon: LucideIcon }[] = [
+  { id: "all", label: "All", icon: LayoutGrid },
+  { id: "economy", label: "Economy", icon: Tag },
+  { id: "suvs", label: "SUVs", icon: Car },
+  { id: "passenger-vans", label: "Passenger vans", icon: Bus },
+  { id: "pickup-truck", label: "Pickup trucks", icon: Package },
+  { id: "premium", label: "Premium", icon: Sparkles },
+  { id: "luxury", label: "Luxury", icon: Gem },
+];
+
+export const VEHICLE_TITLE_MAP: Record<string, string> = {
+  all: "All cars",
+  economy: "Economy cars",
+  suvs: "SUVs",
+  "passenger-vans": "Passenger vans",
+  "pickup-truck": "Pickup trucks",
+  premium: "Premium cars",
+  luxury: "Luxury cars",
+};
+
+export function VehicleTypeSelector({
+  value,
+  onChange,
+}: {
+  value?: string;
+  onChange?: (id: string) => void;
+} = {}) {
+  const [internalSelected, setInternalSelected] = useState("all");
+  const selected = value ?? internalSelected;
+  const setSelected = onChange ?? setInternalSelected;
+  const containerRef = useRef<HTMLDivElement>(null);
+  const buttonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const [pillStyle, setPillStyle] = useState({ left: 0, width: 0 });
+
+  function measurePill() {
+    const btn = selected ? buttonRefs.current[selected] : null;
+    const container = containerRef.current;
+    if (!btn || !container) return;
+    const cr = container.getBoundingClientRect();
+    const br = btn.getBoundingClientRect();
+    setPillStyle({ left: br.left - cr.left, width: br.width });
+  }
+
+  useEffect(() => {
+    const t = requestAnimationFrame(measurePill);
+    return () => cancelAnimationFrame(t);
+  }, [selected]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const ro = new ResizeObserver(() => measurePill());
+    ro.observe(container);
+    return () => ro.disconnect();
+  }, [selected]);
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative flex items-center gap-2 overflow-x-auto overflow-y-hidden py-1 md:flex-wrap md:justify-center md:overflow-visible md:py-0 -mx-1 px-1 md:mx-0 md:px-0"
+      role="tablist"
+      aria-label="Vehicle type"
+    >
+      {/* Sliding pill - desktop only; mobile uses direct bg on button */}
+      <div
+        className="pointer-events-none absolute top-0 hidden h-9 rounded-md bg-zinc-900 transition-all duration-300 ease-out md:block"
+        style={{ left: pillStyle.left, width: pillStyle.width }}
+        aria-hidden
+      />
+      {OPTIONS.map(({ id, label, icon: Icon }) => {
+        const isSelected = selected === id;
+        return (
+          <button
+            key={id}
+            ref={(el) => {
+              buttonRefs.current[id] = el;
+            }}
+            type="button"
+            role="tab"
+            aria-selected={isSelected}
+            onClick={() => setSelected(id)}
+            className={cn(
+              "relative z-10 inline-flex h-9 shrink-0 items-center gap-2 rounded-md px-3 text-sm font-medium transition-colors duration-200 focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 has-[>svg]:px-2.5",
+              isSelected
+                ? "bg-zinc-900 text-white md:bg-transparent"
+                : "text-zinc-900 hover:bg-zinc-100"
+            )}
+          >
+            <Icon className="size-4 shrink-0" aria-hidden />
+            {label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
