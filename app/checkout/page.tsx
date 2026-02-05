@@ -28,7 +28,7 @@ export default async function CheckoutPage({ searchParams }: Props) {
     : mockListing;
 
   return (
-    <div className="container mx-auto w-full max-w-6xl py-8">
+    <div className="container mx-auto w-full max-w-[1400px] py-8">
       <h1 className="text-2xl font-bold">Checkout</h1>
       <p className="mt-1 text-muted-foreground">
         Confirm your booking details and payment.

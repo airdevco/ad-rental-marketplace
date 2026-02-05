@@ -19,7 +19,7 @@ export interface VehicleListing {
   transmission?: "Automatic" | "Manual";
 }
 
-const PLACEHOLDER_IMAGES = [
+export const PLACEHOLDER_IMAGES = [
   "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=260&fit=crop",
   "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=400&h=260&fit=crop",
   "https://images.unsplash.com/photo-1542362567-b07e54358753?w=400&h=260&fit=crop",
@@ -36,7 +36,7 @@ const PLACEHOLDER_IMAGES = [
 
 const listings: VehicleListing[] = [
   // Economy (12)
-  { id: "e1", title: "Honda Civic", subtitle: "or similar sedan", imageUrl: PLACEHOLDER_IMAGES[0], seats: 5, luggage: 2, doors: 4, pricePerDay: 32, category: "economy", description: "Reliable and fuel-efficient compact sedan. Perfect for city driving and weekend getaways. Well-maintained with clean interior.", location: { address: "123 Market St", city: "San Francisco" }, hostId: "h1", hostName: "Alex", year: 2022, transmission: "Automatic" },
+  { id: "e1", title: "Tesla Model Y 2024", subtitle: "or similar electric SUV", imageUrl: "https://images.turo.com/media/vehicle/images/ewUbL3QrTLCokGPQPCpsbw.1242x745.jpg", seats: 5, luggage: 2, doors: 4, pricePerDay: 32, category: "economy", description: "Reliable and fuel-efficient compact sedan. Perfect for city driving and weekend getaways. Well-maintained with clean interior.", location: { address: "123 Market St", city: "San Francisco" }, hostId: "h1", hostName: "Alex", year: 2024, transmission: "Automatic" },
   { id: "e2", title: "Toyota Corolla", subtitle: "or similar compact", imageUrl: PLACEHOLDER_IMAGES[1], seats: 5, luggage: 2, doors: 4, pricePerDay: 28, category: "economy" },
   { id: "e3", title: "Hyundai Elantra", subtitle: "or similar sedan", imageUrl: PLACEHOLDER_IMAGES[2], seats: 5, luggage: 2, doors: 4, pricePerDay: 35, category: "economy" },
   { id: "e4", title: "Nissan Sentra", subtitle: "or similar compact", imageUrl: PLACEHOLDER_IMAGES[3], seats: 5, luggage: 2, doors: 4, pricePerDay: 30, category: "economy" },
@@ -139,4 +139,58 @@ export function getListingById(id: string): VehicleListing | undefined {
   const listing = listings.find((l) => l.id === id);
   if (!listing) return undefined;
   return { ...DUMMY_DETAILS, ...listing };
+}
+
+/** Tesla Model Y (e1) gallery images from Turo */
+const TESLA_E1_GALLERY = [
+  "https://images.turo.com/media/vehicle/images/fenUEuJRRJ2ul9EPO2te7A.1242x745.jpg",
+  "https://images.turo.com/media/vehicle/images/DwjsH_X3R1aCEGDKnCRtzg.1242x745.jpg",
+  "https://images.turo.com/media/vehicle/images/NF5Sh3L4R9uT4wrtUCPizg.1242x745.jpg",
+  "https://images.turo.com/media/vehicle/images/9uxxthS7TBqB1bS38P6Z3Q.1242x745.jpg",
+  "https://images.turo.com/media/vehicle/images/oz-yC2eAQUStHBWtO5HYxw.1242x745.jpg",
+];
+
+/** Gallery images for listing detail (main + 4 thumbnails, total 19 for "Show all") */
+export function getListingGalleryImages(listing: VehicleListing): string[] {
+  if (listing.id === "e1") {
+    return [listing.imageUrl, ...TESLA_E1_GALLERY];
+  }
+  const idx = listing.id.split("").reduce((a, c) => a + c.charCodeAt(0), 0) % PLACEHOLDER_IMAGES.length;
+  const out: string[] = [listing.imageUrl];
+  for (let i = 1; i < 19; i++) {
+    out.push(PLACEHOLDER_IMAGES[(idx + i) % PLACEHOLDER_IMAGES.length]);
+  }
+  return out;
+}
+
+/** Car features with icons (like "This car has") */
+export const CAR_FEATURES = [
+  { icon: "bluetooth", label: "Bluetooth" },
+  { icon: "usb", label: "USB charging" },
+  { icon: "ac", label: "A/C" },
+  { icon: "backup", label: "Backup camera" },
+  { icon: "cruise", label: "Cruise control" },
+] as const;
+
+/** Detailed amenities by category (What this car offers) */
+export const CAR_AMENITIES: Record<string, string[]> = {
+  "Tech & Entertainment": ["Apple CarPlay", "Android Auto", "Bluetooth", "USB ports", "Rear camera"],
+  "Comfort": ["A/C", "Heated seats", "Leather seats", "Sunroof"],
+  "Safety": ["ABS", "Airbags", "Blind spot monitoring", "Lane assist"],
+};
+
+/** Dummy reviews */
+export function getListingReviews(listingId: string): { author: string; rating: number; text: string; date: string }[] {
+  const reviews = [
+    { author: "Sarah M.", rating: 5, text: "Smooth ride and very clean. Host was responsive and flexible with pickup time.", date: "Jan 2025" },
+    { author: "James K.", rating: 5, text: "Great car for our road trip. No issues at all. Would rent again!", date: "Dec 2024" },
+    { author: "Emily R.", rating: 5, text: "Exactly as described. Easy pickup and drop-off process.", date: "Nov 2024" },
+  ];
+  return reviews;
+}
+
+/** Dummy review count from listing id */
+export function getListingReviewCount(listingId: string): number {
+  const n = listingId.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+  return 40 + (n % 30);
 }

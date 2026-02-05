@@ -16,6 +16,11 @@ const nextConfig: NextConfig = {
         hostname: "images.unsplash.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "images.turo.com",
+        pathname: "/**",
+      },
     ],
   },
   async redirects() {

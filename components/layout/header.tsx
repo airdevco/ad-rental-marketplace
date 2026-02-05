@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { List, X } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
+import { useListingScroll } from "@/lib/listing-scroll-context";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -23,7 +24,12 @@ export function Header() {
   const isLoggedIn = false;
   const pathname = usePathname();
   const isHome = pathname === "/";
+  const isListingPage = pathname.startsWith("/listing/");
+  const { pastGallery } = useListingScroll();
   const [scrolled, setScrolled] = useState(false);
+
+  // Hide header when on listing page and scrolled past gallery (tab bar replaces it)
+  const hidden = isListingPage && pastGallery;
   const [showHeaderSearch, setShowHeaderSearch] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -41,11 +47,13 @@ export function Header() {
   const showBorder = !isHome && !scrolled;
   const headerBg = scrolled ? "bg-white" : "bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80";
 
+  if (hidden) return null;
+
   return (
     <header
       className={`sticky top-0 z-50 w-full ${headerBg} ${showBorder ? "border-b border-zinc-200" : ""}`}
     >
-      <div className="container relative flex h-16 w-full max-w-7xl items-center justify-between gap-4">
+      <div className="container relative flex h-16 w-full max-w-[1400px] items-center justify-between gap-4">
         <Link
           href="/"
           className="flex shrink-0 items-center focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:rounded-md"

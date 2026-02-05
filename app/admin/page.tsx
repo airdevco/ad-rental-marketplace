@@ -22,7 +22,7 @@ export const metadata = {
 
 export default function AdminPage() {
   return (
-    <div className="container mx-auto w-full max-w-7xl py-8">
+    <div className="container mx-auto w-full max-w-[1400px] py-8">
       <h1 className="text-2xl font-bold">Admin</h1>
       <p className="mt-1 text-muted-foreground">
         Overview of all listings and rentals. Role guard is UI-only for now.

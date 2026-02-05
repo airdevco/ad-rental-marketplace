@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { HeroSearch } from "@/components/landing/hero-search";
 import { HeroWithScrollPadding } from "@/components/landing/hero-with-scroll-padding";
@@ -24,7 +25,7 @@ export default function Home() {
     <div className="min-h-screen w-full">
       {/* Hero - background same width as header content (logo to sign up) */}
       <HeroWithScrollPadding aria-labelledby="hero-heading">
-        <div className="container mx-auto w-full max-w-7xl">
+        <div className="container mx-auto w-full max-w-[1400px]">
           <div className="relative w-full overflow-hidden rounded-3xl pb-16 pt-14 md:pb-20 md:pt-18">
             <div className="relative text-center">
               <h1
@@ -44,13 +45,15 @@ export default function Home() {
         </div>
       </HeroWithScrollPadding>
 
-      <div className="container mx-auto w-full max-w-7xl">
-        <SelectorAndFeaturedRentals />
+      <div className="container mx-auto w-full max-w-[1400px]">
+        <Suspense fallback={<div className="py-16 text-center text-muted-foreground">Loading...</div>}>
+          <SelectorAndFeaturedRentals />
+        </Suspense>
       </div>
 
       {/* Value props */}
       <section id="value-props" className="py-16 md:py-20" aria-labelledby="value-props-heading">
-        <div className="container mx-auto max-w-7xl">
+        <div className="container mx-auto max-w-[1400px]">
           <h2 id="value-props-heading" className="sr-only">
             Why use Rentals
           </h2>
@@ -67,7 +70,7 @@ export default function Home() {
 
       {/* CTA */}
       <section className="py-16 md:py-20" id="contact" aria-labelledby="cta-heading">
-        <div className="container mx-auto max-w-7xl text-center">
+        <div className="container mx-auto max-w-[1400px] text-center">
           <h2 id="cta-heading" className="text-2xl font-bold md:text-3xl">
             Ready to find your next rental car?
           </h2>

@@ -21,7 +21,7 @@ const socialLinks = [
 export function Footer() {
   return (
     <footer className="border-t border-[#ECECEC] bg-[#F7F7F7]">
-      <div className="container w-full max-w-7xl py-12">
+      <div className="container w-full max-w-[1400px] py-12">
         <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <Link
@@ -72,7 +72,7 @@ export function Footer() {
         className="border-t border-[#ECECEC] py-4"
         aria-label="Copyright and social links"
       >
-        <div className="container flex w-full max-w-7xl flex-col items-center justify-between gap-3 py-0 sm:flex-row">
+        <div className="container flex w-full max-w-[1400px] flex-col items-center justify-between gap-3 py-0 sm:flex-row">
           <p className="text-sm leading-none text-muted-foreground">
             © Rento. All rights reserved.
           </p>

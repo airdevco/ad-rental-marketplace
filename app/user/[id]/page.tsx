@@ -35,7 +35,7 @@ export default async function UserProfilePage({ params }: Props) {
   const listings = MOCK_LISTINGS.filter((l) => l.listerId === id);
 
   return (
-    <div className="container mx-auto w-full max-w-6xl py-8">
+    <div className="container mx-auto w-full max-w-[1400px] py-8">
       <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:text-left">
         <Avatar className="size-20">
           <AvatarFallback className="text-2xl">{user.name.slice(0, 1)}</AvatarFallback>

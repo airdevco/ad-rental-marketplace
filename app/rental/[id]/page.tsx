@@ -32,7 +32,7 @@ export default async function RentalPage({ params }: Props) {
   const { title, description, pricePerNight, location, listerId, listerName, badge, rating, reviewCount } = listing;
 
   return (
-    <div className="container mx-auto w-full max-w-6xl py-8">
+    <div className="container mx-auto w-full max-w-[1400px] py-8">
       <div className="grid gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
           <div className="aspect-video w-full overflow-hidden rounded-xl bg-muted">

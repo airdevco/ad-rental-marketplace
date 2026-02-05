@@ -25,7 +25,7 @@ export const metadata = {
 
 export default function BuyerDashboardPage() {
   return (
-    <div className="container mx-auto w-full max-w-7xl py-8">
+    <div className="container mx-auto w-full max-w-[1400px] py-8">
       <h1 className="text-2xl font-bold">My rentals</h1>
       <p className="mt-1 text-muted-foreground">
         Upcoming trips and past bookings.

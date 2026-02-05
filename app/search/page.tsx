@@ -20,7 +20,7 @@ function SearchResultsFallback() {
 
 export default function SearchPage() {
   return (
-    <div className="container mx-auto w-full max-w-7xl py-8">
+    <div className="container mx-auto w-full max-w-[1400px] py-8">
       <h1 className="text-2xl font-bold md:text-3xl">Search rentals</h1>
       <p className="mt-1 text-muted-foreground">
         Use filters and sort to find the right rental.
