@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   LayoutGrid,
   Tag,
@@ -69,6 +69,33 @@ export function VehicleTypeSelector({
     return () => ro.disconnect();
   }, [selected]);
 
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent, currentId: string) => {
+      const idx = OPTIONS.findIndex((o) => o.id === currentId);
+      if (idx < 0) return;
+      let nextIdx = idx;
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        nextIdx = Math.min(idx + 1, OPTIONS.length - 1);
+      } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        nextIdx = Math.max(idx - 1, 0);
+      } else if (e.key === "Home") {
+        e.preventDefault();
+        nextIdx = 0;
+      } else if (e.key === "End") {
+        e.preventDefault();
+        nextIdx = OPTIONS.length - 1;
+      } else {
+        return;
+      }
+      const nextId = OPTIONS[nextIdx].id;
+      setSelected(nextId);
+      buttonRefs.current[nextId]?.focus();
+    },
+    [setSelected]
+  );
+
   return (
     <div
       ref={containerRef}
@@ -93,7 +120,9 @@ export function VehicleTypeSelector({
             type="button"
             role="tab"
             aria-selected={isSelected}
+            tabIndex={isSelected ? 0 : -1}
             onClick={() => setSelected(id)}
+            onKeyDown={(e) => handleKeyDown(e, id)}
             className={cn(
               "relative z-10 inline-flex h-9 shrink-0 items-center gap-2 rounded-md px-3 text-sm font-medium transition-colors duration-200 focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 has-[>svg]:px-2.5",
               isSelected
@@ -101,7 +130,13 @@ export function VehicleTypeSelector({
                 : "text-zinc-900 hover:bg-zinc-100"
             )}
           >
-            <Icon className="size-4 shrink-0" aria-hidden />
+            <Icon
+              className={cn(
+                "size-4 shrink-0",
+                (id === "suvs" || id === "passenger-vans") && "scale-110"
+              )}
+              aria-hidden
+            />
             {label}
           </button>
         );

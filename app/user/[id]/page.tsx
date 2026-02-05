@@ -62,7 +62,7 @@ export default async function UserProfilePage({ params }: Props) {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base">
                     <Link
-                      href={`/rental/${listing.id}`}
+                      href={`/listing/${listing.id}`}
                       className="focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring focus-visible:rounded-md hover:underline"
                     >
                       {listing.title}
@@ -75,7 +75,7 @@ export default async function UserProfilePage({ params }: Props) {
                 </CardContent>
                 <CardFooter>
                   <Button asChild size="sm" className="w-full min-h-[44px]">
-                    <Link href={`/rental/${listing.id}`}>View details</Link>
+                    <Link href={`/listing/${listing.id}`}>View details</Link>
                   </Button>
                 </CardFooter>
               </Card>

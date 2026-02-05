@@ -7,15 +7,15 @@ import { SelectorAndFeaturedRentals } from "@/components/landing/selector-and-fe
 const valueProps = [
   {
     title: "Search your way",
-    description: "Browse as a list or explore on the map. Same listings, the view that fits you.",
+    description: "Browse by list or explore on the map. Same cars, the view that fits you.",
   },
   {
     title: "Book with confidence",
-    description: "See availability, reviews, and lister details before you commit.",
+    description: "See availability, reviews, and host details before you commit.",
   },
   {
     title: "Message directly",
-    description: "Chat with listers to ask questions and coordinate your rental.",
+    description: "Chat with hosts to ask questions and coordinate pickup.",
   },
 ];
 
@@ -25,22 +25,16 @@ export default function Home() {
       {/* Hero - background same width as header content (logo to sign up) */}
       <HeroWithScrollPadding aria-labelledby="hero-heading">
         <div className="container mx-auto w-full max-w-7xl">
-          <div
-            className="relative w-full overflow-hidden rounded-3xl bg-[#0f2744] bg-cover bg-center bg-no-repeat pb-16 pt-14 md:pb-20 md:pt-18"
-            style={{
-              backgroundImage: "url(https://e47b698e59208764aee00d1d8e14313c.cdn.bubble.io/f1770316859498x537247407942397900/car.webp)",
-            }}
-          >
-            <div className="absolute inset-0 bg-black/25" aria-hidden />
+          <div className="relative w-full overflow-hidden rounded-3xl pb-16 pt-14 md:pb-20 md:pt-18">
             <div className="relative text-center">
               <h1
                 id="hero-heading"
-                className="text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl"
+                className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl"
               >
                 Skip the rental counter
               </h1>
-              <p className="mx-auto mt-4 max-w-2xl text-lg text-white/90">
-                Rent just about any place or thing, just about anywhere.
+              <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+                Find your perfect ride and rent cars from local hosts
               </p>
               <div className="mt-8 flex flex-col items-center">
                 <HeroSearch />
@@ -75,10 +69,10 @@ export default function Home() {
       <section className="py-16 md:py-20" id="contact" aria-labelledby="cta-heading">
         <div className="container mx-auto max-w-7xl text-center">
           <h2 id="cta-heading" className="text-2xl font-bold md:text-3xl">
-            Ready to find your next rental?
+            Ready to find your next rental car?
           </h2>
           <p className="mt-2 text-muted-foreground">
-            Sign up to save favorites, message listers, and manage bookings.
+            Sign up to save favorites, message hosts, and manage bookings.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Button asChild size="lg">

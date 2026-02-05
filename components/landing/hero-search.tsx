@@ -23,7 +23,7 @@ import { TimePicker } from "@/components/ui/time-picker";
 import { cn } from "@/lib/utils";
 
 function formatDate(d: Date) {
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 function formatTimeSummary(time: string) {
@@ -113,7 +113,7 @@ export function HeroSearch() {
   return (
     <div className="flex w-full max-w-4xl flex-col items-center gap-6 px-4 md:px-0">
       {/* Mobile: same look as desktop (white bar, Where + search) but no From/Until; same height, no divider */}
-      <div className="h-[72px] w-full rounded-xl bg-white px-3 py-1.5 md:hidden">
+      <div className="h-[72px] w-full rounded-[99px] border border-zinc-200 bg-white px-5 py-1.5 shadow-sm md:hidden">
         <div className="flex flex-col justify-center gap-0">
           <Label htmlFor="hero-search-mobile-trigger" className="text-xs font-medium text-zinc-600">
             Where
@@ -137,7 +137,7 @@ export function HeroSearch() {
                 type="button"
                 size="icon"
                 onClick={() => setMobileSheetOpen(true)}
-                className="h-9 w-9 shrink-0 rounded-lg bg-[#156EF5] hover:bg-[#125bd4] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="h-9 w-9 shrink-0 rounded-full bg-[#156EF5] hover:bg-[#125bd4] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 aria-label="Open search"
               >
                 <SearchIcon className="size-5 text-white" aria-hidden />
@@ -248,7 +248,7 @@ export function HeroSearch() {
                     </PopoverAnchor>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium text-zinc-600">Until</Label>
+                    <Label className="text-xs font-medium text-zinc-600">To</Label>
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
@@ -306,12 +306,12 @@ export function HeroSearch() {
       {/* Desktop + smaller viewports: inline form, same height and search button size */}
       <form
         onSubmit={handleSubmit}
-        className="hidden w-full min-h-12 flex-col gap-1.5 rounded-xl bg-white p-2 md:flex md:min-h-12 md:flex-row md:items-stretch md:gap-0 md:rounded-xl md:py-1.5 md:px-0"
+        className="hidden w-full min-h-12 flex-col gap-1.5 rounded-[99px] border border-zinc-200 bg-white px-5 py-1.5 shadow-sm md:flex md:min-h-12 md:flex-row md:items-stretch md:gap-0"
         aria-label="Search rentals"
       >
         {/* Where - geographic autocomplete */}
         <Popover open={whereOpen} onOpenChange={setWhereOpen}>
-          <div className="flex min-h-10 flex-1 flex-col justify-center gap-0.5 text-left sm:min-w-0 sm:rounded-l-xl sm:px-3 sm:py-1 md:min-h-12 lg:min-w-[200px] lg:max-w-[320px]">
+          <div className="flex min-h-10 flex-1 flex-col justify-center gap-0.5 text-left sm:min-w-0 sm:rounded-l-[99px] sm:px-3 sm:py-1 md:min-h-12 lg:min-w-[200px] lg:max-w-[320px]">
             <Label htmlFor="hero-where" className="text-xs font-medium text-zinc-600">
               Where
             </Label>
@@ -407,7 +407,7 @@ export function HeroSearch() {
               </div>
               {/* Until - divider on left is only this block's height */}
               <div className="flex flex-1 flex-col gap-0.5 text-left sm:min-w-0 sm:border-l sm:border-zinc-200 sm:pl-3 sm:pr-0">
-                <Label className="text-xs font-medium text-zinc-600">Until</Label>
+                <Label className="text-xs font-medium text-zinc-600">To</Label>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
@@ -456,7 +456,7 @@ export function HeroSearch() {
           <Button
             type="submit"
             size="icon"
-            className="h-9 w-9 shrink-0 rounded-lg bg-[#156EF5] hover:bg-[#125bd4] focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#156EF5] [touch-action:manipulation]"
+            className="h-9 w-9 shrink-0 rounded-full bg-[#156EF5] hover:bg-[#125bd4] focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#156EF5] [touch-action:manipulation]"
             aria-label="Search rentals"
           >
             <SearchIcon className="size-5 text-white" aria-hidden />

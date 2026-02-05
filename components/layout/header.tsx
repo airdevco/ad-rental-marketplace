@@ -4,38 +4,48 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { List, X } from "@phosphor-icons/react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { HeaderSearchBar } from "@/components/landing/header-search-bar";
+
+const SCROLL_THRESHOLD = 280;
 
 export function Header() {
   const isLoggedIn = false;
   const pathname = usePathname();
   const isHome = pathname === "/";
   const [scrolled, setScrolled] = useState(false);
+  const [showHeaderSearch, setShowHeaderSearch] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     function onScroll() {
-      setScrolled(window.scrollY > 0);
+      const y = window.scrollY;
+      setScrolled(y > 0);
+      setShowHeaderSearch(isHome && y > SCROLL_THRESHOLD);
     }
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [isHome]);
 
-  const showBorder = scrolled || !isHome;
+  const showBorder = !isHome && !scrolled;
   const headerBg = scrolled ? "bg-white" : "bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80";
 
   return (
     <header
       className={`sticky top-0 z-50 w-full ${headerBg} ${showBorder ? "border-b border-zinc-200" : ""}`}
     >
-      <div className="container flex h-14 w-full max-w-7xl items-center justify-between gap-4">
+      <div className="container relative flex h-16 w-full max-w-7xl items-center justify-between gap-4">
         <Link
           href="/"
           className="flex shrink-0 items-center focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:rounded-md"
@@ -50,57 +60,76 @@ export function Header() {
             priority
           />
         </Link>
-        <nav aria-label="Main navigation" className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/search">Search</Link>
-          </Button>
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/search/map">Map</Link>
-          </Button>
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/messages">Messages</Link>
-          </Button>
-        </nav>
-        <div className="flex items-center gap-2">
-          {isLoggedIn ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full"
-                  aria-label="Open account menu"
-                >
-                  <Avatar className="size-8">
-                    <AvatarFallback>U</AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/buyer">My rentals</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/seller">Listings</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/messages">Messages</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/login">Sign out</Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <>
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/login">Log in</Link>
-              </Button>
-              <Button size="sm" asChild>
-                <Link href="/signup">Sign up</Link>
-              </Button>
-            </>
+        {showHeaderSearch && (
+          <div className="absolute left-1/2 top-1/2 w-full max-w-2xl -translate-x-1/2 -translate-y-1/2 animate-in fade-in-0 px-4 duration-200">
+            <HeaderSearchBar />
+          </div>
+        )}
+        <div className="flex shrink-0 items-center gap-2 border-0 shadow-none">
+          {isLoggedIn && (
+            <Link
+              href="/dashboard/buyer"
+              className="flex shrink-0 items-center focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-full"
+              aria-label="Account"
+            >
+              <Avatar className="size-8">
+                <AvatarFallback>U</AvatarFallback>
+              </Avatar>
+            </Link>
           )}
+          <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  "size-9 rounded-full border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 hover:bg-zinc-100",
+                  menuOpen && "bg-zinc-100"
+                )}
+                aria-label={menuOpen ? "Close menu" : "Open menu"}
+              >
+                {menuOpen ? (
+                  <X size={20} weight="bold" aria-hidden />
+                ) : (
+                  <List size={20} weight="bold" aria-hidden />
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 min-w-56 p-2">
+              {isLoggedIn ? (
+                <>
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/buyer">My rentals</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/seller">Listings</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/messages">Messages</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="-mx-2 my-1 h-px" />
+                  <DropdownMenuItem asChild>
+                    <Link href="/login">Sign out</Link>
+                  </DropdownMenuItem>
+                </>
+              ) : (
+                <>
+                  <DropdownMenuItem asChild>
+                    <Link href="/search">Browse listing</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/seller">List your vehicle</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="-mx-2 my-1 h-px" />
+                  <div className="px-0 py-3">
+                    <Button asChild size="sm" className="w-full rounded-md bg-[#156EF5] px-4 py-2.5 hover:bg-[#125bd4]">
+                      <Link href="/login">Log in or Sign up</Link>
+                    </Button>
+                  </div>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>

@@ -103,7 +103,7 @@ export function MapSearchClient() {
                 <p className="text-sm">{selected.location.city}</p>
                 <div className="flex gap-2">
                   <Button asChild className="min-h-[44px]">
-                    <Link href={`/rental/${selected.id}`}>View full details</Link>
+                    <Link href={`/listing/${selected.id}`}>View full details</Link>
                   </Button>
                   <Button
                     variant="outline"

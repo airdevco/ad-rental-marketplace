@@ -49,7 +49,7 @@ export default function AdminPage() {
                     </p>
                   </div>
                   <Button variant="outline" size="sm" asChild>
-                    <Link href={`/rental/${listing.id}`}>View</Link>
+                    <Link href={`/listing/${listing.id}`}>View</Link>
                   </Button>
                 </div>
               ))}
@@ -77,7 +77,7 @@ export default function AdminPage() {
                     </p>
                   </div>
                   <Button variant="outline" size="sm" asChild>
-                    <Link href={`/rental/${r.rentalId}`}>View listing</Link>
+                    <Link href={`/listing/${r.rentalId}`}>View listing</Link>
                   </Button>
                 </div>
               ))}

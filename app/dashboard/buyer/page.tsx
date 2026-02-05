@@ -57,7 +57,7 @@ export default function BuyerDashboardPage() {
                   </CardHeader>
                   <CardFooter className="flex gap-2">
                     <Button size="sm" asChild>
-                      <Link href={`/rental/${r.rentalId}`}>View details</Link>
+                      <Link href={`/listing/${r.rentalId}`}>View details</Link>
                     </Button>
                     <Button variant="outline" size="sm" asChild>
                       <Link href="/messages">Message host</Link>
@@ -87,7 +87,7 @@ export default function BuyerDashboardPage() {
                   </CardHeader>
                   <CardFooter className="flex gap-2">
                     <Button size="sm" variant="outline" asChild>
-                      <Link href={`/rental/${r.rentalId}`}>View listing</Link>
+                      <Link href={`/listing/${r.rentalId}`}>View listing</Link>
                     </Button>
                     {"hasReviewed" in r && !r.hasReviewed && (
                       <Button size="sm">Leave review</Button>

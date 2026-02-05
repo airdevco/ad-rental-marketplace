@@ -58,7 +58,7 @@ export default function SellerDashboardPage() {
                   </CardContent>
                   <CardFooter className="flex gap-2">
                     <Button variant="outline" size="sm" asChild>
-                      <Link href={`/rental/${listing.id}`}>View</Link>
+                      <Link href={`/listing/${listing.id}`}>View</Link>
                     </Button>
                     <RemoveListingDialog listingTitle={listing.title}>
                       <Button variant="destructive" size="sm">

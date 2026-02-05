@@ -148,7 +148,7 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
           Confirm booking
         </Button>
         <Button type="button" variant="outline" size="lg" asChild className="min-h-[44px]">
-          <Link href={rentalId ? `/rental/${rentalId}` : "/search"}>Cancel</Link>
+          <Link href={rentalId ? `/listing/${rentalId}` : "/search"}>Cancel</Link>
         </Button>
       </div>
     </form>

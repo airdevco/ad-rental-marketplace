@@ -25,7 +25,7 @@ export function ListingCard({ listing }: ListingCardProps) {
         <div className="flex items-start justify-between gap-2">
           <CardTitle className="text-base">
             <Link
-              href={`/rental/${id}`}
+              href={`/listing/${id}`}
               className="focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring focus-visible:rounded-md hover:underline"
             >
               {title}
@@ -52,7 +52,7 @@ export function ListingCard({ listing }: ListingCardProps) {
       </CardContent>
       <CardFooter>
         <Button asChild size="sm" className="w-full min-h-[44px]">
-          <Link href={`/rental/${id}`}>View details</Link>
+          <Link href={`/listing/${id}`}>View details</Link>
         </Button>
       </CardFooter>
     </Card>
