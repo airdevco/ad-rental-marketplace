@@ -26,8 +26,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Dialog,
@@ -47,6 +46,8 @@ import {
   getDummyRating,
   getListingReviews,
   getListingReviewCount,
+  getListingLocation,
+  getMapEmbedUrl,
   CAR_FEATURES,
   CAR_AMENITIES,
 } from "@/lib/vehicle-listings";
@@ -68,9 +69,12 @@ const SECTION_TABS = [
   { id: "reviews", label: "Reviews" },
 ] as const;
 
+const REVIEW_TRUNCATE_LENGTH = 180;
+
 export function ListingDetail({ listing, id }: { listing: VehicleListing; id: string }) {
   const [showMoreDesc, setShowMoreDesc] = useState(false);
   const [showAllAmenities, setShowAllAmenities] = useState(false);
+  const [expandedReviews, setExpandedReviews] = useState<Set<number>>(new Set());
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [activeSection, setActiveSection] = useState<string>("overview");
   const [lineStyle, setLineStyle] = useState<{ left: number; width: number }>({ left: 0, width: 0 });
@@ -146,10 +150,11 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
 
   const fullDescription =
     listing.description ??
-    "Well-maintained vehicle with clean interior. Perfect for city driving and weekend getaways. All rentals include insurance and 24/7 roadside assistance. Regular servicing and detailed cleaning before each rental.";
+    "Well-maintained vehicle with clean interior. Perfect for city driving and weekend getaways. Equipped with modern safety features, climate control, and entertainment options. All rentals include insurance and 24/7 roadside assistance. Regular servicing and detailed cleaning before each rental.";
 
-  const shortDesc = fullDescription.slice(0, 180);
-  const isLongDesc = fullDescription.length > 180;
+  const paragraphs = fullDescription.split(/\n\n+/);
+  const hasMultipleParagraphs = paragraphs.length > 1;
+  const shortDesc = hasMultipleParagraphs ? paragraphs[0] + "…" : fullDescription;
 
   const amenitiesEntries = Object.entries(CAR_AMENITIES);
   const visibleAmenities = showAllAmenities
@@ -176,29 +181,35 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
 
   return (
     <div className="overflow-x-clip">
-      {/* Full-width image gallery - extends edge-to-edge above booking card */}
-      <div ref={galleryRef} className="w-screen relative left-1/2 -translate-x-1/2 overflow-hidden">
-        <div className="relative grid grid-cols-4 grid-rows-2 gap-1 overflow-hidden">
-          <div className="col-span-2 row-span-2 relative aspect-[16/9] overflow-hidden bg-zinc-100">
+      {/* Image gallery - same width as header content, rounded outer corners */}
+      <div
+        ref={galleryRef}
+        className={`container mx-auto w-full max-w-[1400px] px-4 overflow-hidden transition-[padding] duration-200 ${pastGallery ? "pt-0" : "pt-6"}`}
+      >
+        <div className="relative grid grid-cols-4 grid-rows-2 gap-1 overflow-hidden rounded-xl">
+          <div className="col-span-2 row-span-2 relative aspect-[16/9] overflow-hidden rounded-tl-xl rounded-bl-xl bg-zinc-100">
             <Image
               src={mainImage}
               alt={listing.title}
               fill
               className="object-cover"
               priority
-              sizes="100vw"
+              sizes="(max-width: 1400px) 100vw, 1400px"
             />
           </div>
           {thumbnails.map((src, i) => (
-            <div key={i} className="relative aspect-[16/9] overflow-hidden bg-zinc-100">
-              <Image
-                src={src}
-                alt={`${listing.title} ${i + 2}`}
-                fill
-                className="object-cover"
-                sizes="25vw"
-              />
-            </div>
+            <div
+              key={i}
+              className={`relative aspect-[16/9] overflow-hidden bg-zinc-100 ${i === 1 ? "rounded-tr-xl" : ""} ${i === 3 ? "rounded-br-xl" : ""}`}
+            >
+                <Image
+                  src={src}
+                  alt={`${listing.title} ${i + 2}`}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1400px) 25vw, 350px"
+                />
+              </div>
           ))}
           <Dialog>
             <DialogTrigger asChild>
@@ -279,9 +290,11 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
       )}
 
       <div className="container mx-auto w-full max-w-[1400px] px-4 py-8">
+        {/* Overview anchor - scroll target, right above title */}
+        <div id="overview" className="scroll-mt-24" />
         {/* Title row: car name + Wishlist/Share buttons aligned with booking card */}
         <div className="grid gap-4 lg:grid-cols-[1fr_380px] lg:gap-8 items-start">
-          <h1 id="overview" className="text-2xl font-black md:text-3xl">{listing.title}</h1>
+          <h1 className="text-2xl font-black md:text-3xl">{listing.title}</h1>
           <div className="flex gap-2 justify-end lg:justify-end">
             <Button
               variant="outline"
@@ -323,9 +336,9 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
           </div>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-[1fr_380px] mt-2">
+        <div className="grid gap-12 lg:grid-cols-[1fr_380px] lg:gap-16 mt-2">
           {/* Left column - main content */}
-          <div className="min-w-0 space-y-6">
+          <div className="min-w-0 max-w-3xl space-y-6">
           {/* Key stats - same style as index cards */}
           <div className="flex items-center gap-4 text-sm font-medium text-zinc-900">
             <span className="flex items-center gap-1.5" aria-label={`${listing.seats} passengers`}>
@@ -341,40 +354,70 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
               {listing.doors} doors
             </span>
           </div>
-          <p className="flex items-center gap-2 text-sm">
-            <Star size={16} weight="fill" className="text-amber-400" aria-hidden />
-            <span className="font-medium">{rating.toFixed(1)}</span>
-            <span className="text-muted-foreground">•</span>
-            <span>Superhost</span>
-            <span className="text-muted-foreground">•</span>
-            <span>{reviewCount} reviews</span>
-          </p>
 
           <Separator />
 
-          {/* Listed by - keep existing */}
-          <div className="flex items-start gap-4">
-            <Link
-              href={listing.hostId ? `/user/${listing.hostId}` : "#"}
-              className="flex shrink-0 focus-visible:rounded-full focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <Avatar className="size-14">
-                <AvatarFallback className="text-lg">{hostName.slice(0, 1)}</AvatarFallback>
-              </Avatar>
-            </Link>
-            <div>
-              <p className="font-semibold">{hostName}</p>
-              <p className="text-sm text-muted-foreground">Joined in March 2021</p>
-              <Badge variant="secondary" className="mt-1">
-                Verified
-              </Badge>
+          {/* Listed by */}
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <Link
+                href={listing.hostId ? `/user/${listing.hostId}` : "#"}
+                className="flex shrink-0 focus-visible:rounded-full focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Avatar className="size-10">
+                  <AvatarImage
+                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face"
+                    alt={hostName}
+                  />
+                  <AvatarFallback className="text-lg">{hostName.slice(0, 1)}</AvatarFallback>
+                </Avatar>
+              </Link>
+              <div>
+                <p className="flex items-center gap-2 font-semibold">
+                  Alexander C.
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600">
+                    <CheckCircle className="size-3.5 text-green-600" aria-hidden />
+                    Verified
+                  </span>
+                </p>
+                <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <Star size={14} weight="fill" className="text-amber-400" aria-hidden />
+                  <span className="font-medium text-foreground">{rating.toFixed(1)}</span>
+                  <span>•</span>
+                  <span>{reviewCount} reviews</span>
+                  <span>•</span>
+                  <span>Joined Mar 2024</span>
+                </p>
+              </div>
             </div>
+            <Button asChild variant="outline" className="shrink-0">
+              <Link href={`/messages?with=${listing.hostId ?? ""}`}>Contact host</Link>
+            </Button>
           </div>
 
           <Separator />
 
+          {/* About the vehicle */}
+          <section>
+            <h2 className="text-lg font-semibold">About the vehicle</h2>
+            <p className="mt-2 text-muted-foreground whitespace-pre-line">
+              {showMoreDesc ? fullDescription : shortDesc}
+            </p>
+            {hasMultipleParagraphs && !showMoreDesc && (
+              <Button
+                variant="ghost"
+                className="mt-2 h-auto p-0 font-medium underline"
+                onClick={() => setShowMoreDesc(true)}
+              >
+                Show more
+              </Button>
+            )}
+          </section>
+
+          <Separator />
+
           {/* This car has */}
-          <section id="features">
+          <section>
             <h2 className="text-lg font-semibold">This car has</h2>
             <ul className="mt-3 grid gap-3 sm:grid-cols-2">
               {CAR_FEATURES.map(({ icon, label }) => {
@@ -391,28 +434,8 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
 
           <Separator />
 
-          {/* About the vehicle */}
-          <section>
-            <h2 className="text-lg font-semibold">About the vehicle</h2>
-            <p className="mt-2 text-muted-foreground">
-              {showMoreDesc ? fullDescription : shortDesc}
-              {isLongDesc && !showMoreDesc && "…"}
-            </p>
-            {isLongDesc && (
-              <Button
-                variant="ghost"
-                className="mt-2 h-auto p-0 font-medium underline"
-                onClick={() => setShowMoreDesc(true)}
-              >
-                Show more
-              </Button>
-            )}
-          </section>
-
-          <Separator />
-
-          {/* What this car offers */}
-          <section>
+          {/* What this car offers - Features nav scroll target */}
+          <section id="features" className="scroll-mt-24">
             <h2 className="text-lg font-semibold">What this car offers</h2>
             <div className="mt-3 space-y-4">
               {visibleAmenities.map(([category, items]) => (
@@ -439,48 +462,23 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
 
           <Separator />
 
-          {/* Interior / Exterior (car-specific) */}
-          <section>
-            <h2 className="text-lg font-semibold">Interior & exterior</h2>
-            <div className="mt-3 grid gap-4 sm:grid-cols-2">
-              <div className="overflow-hidden rounded-lg bg-zinc-100">
-                <div className="relative aspect-video">
-                  <Image
-                    src={galleryImages[1] ?? mainImage}
-                    alt="Interior"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <p className="p-2 font-medium">Interior</p>
-                <p className="px-2 pb-2 text-sm text-muted-foreground">Leather seats, touchscreen</p>
-              </div>
-              <div className="overflow-hidden rounded-lg bg-zinc-100">
-                <div className="relative aspect-video">
-                  <Image
-                    src={galleryImages[2] ?? mainImage}
-                    alt="Exterior"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <p className="p-2 font-medium">Exterior</p>
-                <p className="px-2 pb-2 text-sm text-muted-foreground">Sleek design, alloy wheels</p>
-              </div>
-            </div>
-          </section>
-
-          <Separator />
-
           {/* Where you'll pick up */}
-          <section id="location">
+          <section id="location" className="scroll-mt-24">
             <h2 className="text-lg font-semibold">Where you&apos;ll pick up</h2>
             <div className="mt-3 overflow-hidden rounded-lg border bg-zinc-100">
-              <div className="flex aspect-[21/9] items-center justify-center bg-zinc-200">
-                <MapPin className="size-12 text-zinc-400" />
+              <div className="relative aspect-[21/9] w-full">
+                <iframe
+                  title="Pickup location map"
+                  src={getMapEmbedUrl(listing)}
+                  className="absolute inset-0 h-full w-full border-0"
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
               </div>
-              <p className="p-3 text-sm font-medium">
-                {listing.location?.city ?? "San Francisco"}, California, United States
+              <p className="flex items-center gap-2 p-3 text-sm font-medium">
+                <MapPin className="size-4 shrink-0 text-zinc-500" />
+                {getListingLocation(listing).fullAddress}
               </p>
             </div>
           </section>
@@ -512,78 +510,78 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
 
           <Separator />
 
-          {/* Select dates */}
+          {/* Cancellation policy */}
           <section>
-            <h2 className="text-lg font-semibold">Select dates to see total price</h2>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="mt-3 w-full justify-start text-left font-normal"
-                >
-                  <CalendarIcon className="mr-2 size-4" />
-                  {dateRange?.from
-                    ? dateRange.to
-                      ? `${dateRange.from.toLocaleDateString()} – ${dateRange.to.toLocaleDateString()}`
-                      : dateRange.from.toLocaleDateString()
-                    : "Select dates"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent align="start" className="w-auto p-0">
-                <Calendar
-                  mode="range"
-                  numberOfMonths={2}
-                  selected={dateRange}
-                  onSelect={setDateRange}
-                  disabled={{ before: startOfDay(new Date()) }}
-                />
-              </PopoverContent>
-            </Popover>
+            <h2 className="text-lg font-semibold">Cancellation policy</h2>
+            <div className="mt-3 space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Free cancellation up to 24 hours before pickup. Cancellations within 24 hours of pickup will be charged 50% of the rental fee. No-shows are charged the full rental amount.
+              </p>
+            </div>
           </section>
 
           <Separator />
 
           {/* Guest reviews */}
-          <section id="reviews">
+          <section id="reviews" className="scroll-mt-24">
             <h2 className="text-lg font-semibold">Guest reviews</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               {rating.toFixed(2)} overall rating based on {reviewCount} reviews
             </p>
-            <div className="mt-4 grid gap-4 sm:grid-cols-3">
-              {reviews.map((r, i) => (
-                <div key={i} className="space-y-2">
-                  <div className="flex gap-1">
-                    {Array.from({ length: 5 }).map((_, j) => (
-                      <Star
-                        key={j}
-                        size={14}
-                        weight={j < r.rating ? "fill" : "regular"}
-                        className="text-amber-400"
-                      />
-                    ))}
+            <div className="mt-4 grid gap-6 sm:grid-cols-2">
+              {reviews.map((r, i) => {
+                const isExpanded = expandedReviews.has(i);
+                const needsTruncate = r.text.length > REVIEW_TRUNCATE_LENGTH;
+                const displayText = needsTruncate && !isExpanded
+                  ? r.text.slice(0, REVIEW_TRUNCATE_LENGTH).trim() + "..."
+                  : r.text;
+                return (
+                  <div key={i} className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <Avatar className="size-10 shrink-0">
+                        <AvatarImage src={r.avatarUrl} alt={r.author} />
+                        <AvatarFallback>{r.author.slice(0, 1)}</AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <p className="font-semibold">{r.author}</p>
+                        <p className="text-sm text-muted-foreground">{r.location}</p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-1 text-sm">
+                      <div className="flex gap-0.5">
+                        {Array.from({ length: 5 }).map((_, j) => (
+                          <Star
+                            key={j}
+                            size={14}
+                            weight={j < r.rating ? "fill" : "regular"}
+                            className="text-amber-400"
+                          />
+                        ))}
+                      </div>
+                      <span className="text-muted-foreground">·</span>
+                      <span className="text-muted-foreground">{r.date}</span>
+                      <span className="text-muted-foreground">·</span>
+                      <span className="text-muted-foreground">{r.stayDuration}</span>
+                    </div>
+                    <p className="text-sm text-zinc-700 whitespace-pre-line">{displayText}</p>
+                    {needsTruncate && !isExpanded && (
+                      <Button
+                        variant="ghost"
+                        className="h-auto p-0 font-medium underline"
+                        onClick={() => setExpandedReviews((prev) => new Set(prev).add(i))}
+                      >
+                        Show more
+                      </Button>
+                    )}
                   </div>
-                  <p className="text-sm">{r.text}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {r.author} · {r.date}
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
-            <Button variant="ghost" className="mt-2 h-auto p-0 font-medium underline">
+            <Button variant="ghost" className="mt-4 h-auto p-0 font-medium underline">
               Show all {reviewCount} reviews
             </Button>
           </section>
 
-          <Separator />
-
-          {/* Have a question? */}
-          <section>
-            <h2 className="text-lg font-semibold">Have a question?</h2>
-            <p className="mt-2 text-muted-foreground">Ask {hostName} a question.</p>
-            <Button asChild variant="outline" className="mt-3">
-              <Link href={`/messages?with=${listing.hostId ?? ""}`}>Contact host</Link>
-            </Button>
-          </section>
         </div>
 
         {/* Right column - sticky sidebar */}
@@ -620,20 +618,6 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
               <Button asChild className="h-12 w-full bg-zinc-900 hover:bg-zinc-800">
                 <Link href={`/checkout?listingId=${id}`}>View availability</Link>
               </Button>
-              <Separator />
-              {/* Listed by - compact */}
-              <Link
-                href={listing.hostId ? `/user/${listing.hostId}` : "#"}
-                className="flex items-center gap-3 focus-visible:rounded-md focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <Avatar className="size-10">
-                  <AvatarFallback>{hostName.slice(0, 1)}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-semibold">{hostName}</p>
-                  <p className="text-sm text-muted-foreground">Superhost · Joined in March 2021</p>
-                </div>
-              </Link>
             </CardContent>
           </Card>
           <Button

@@ -44,7 +44,7 @@ export function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, [isHome]);
 
-  const showBorder = !isHome && !scrolled;
+  const showBorder = !isHome && !scrolled && !isListingPage;
   const headerBg = scrolled ? "bg-white" : "bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80";
 
   if (hidden) return null;

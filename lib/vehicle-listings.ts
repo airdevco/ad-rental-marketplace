@@ -12,11 +12,71 @@ export interface VehicleListing {
   category: VehicleCategory;
   rating?: number;
   description?: string;
-  location?: { address: string; city: string };
+  location?: { address: string; city: string; state?: string; lat?: number; lon?: number };
   hostId?: string;
   hostName?: string;
   year?: number;
   transmission?: "Automatic" | "Manual";
+}
+
+/** Real addresses with coordinates for map display (OpenStreetMap) */
+const LOCATION_PRESETS: { address: string; city: string; state: string; lat: number; lon: number }[] = [
+  { address: "123 Market St", city: "San Francisco", state: "CA", lat: 37.7897, lon: -122.3972 },
+  { address: "456 Mission St", city: "San Francisco", state: "CA", lat: 37.7894, lon: -122.4012 },
+  { address: "1 World Way", city: "Los Angeles", state: "CA", lat: 33.9425, lon: -118.4081 },
+  { address: "350 5th Ave", city: "New York", state: "NY", lat: 40.7484, lon: -73.9857 },
+  { address: "233 S Wacker Dr", city: "Chicago", state: "IL", lat: 41.8789, lon: -87.6359 },
+  { address: "400 Broad St", city: "Seattle", state: "WA", lat: 47.6205, lon: -122.3493 },
+  { address: "100 Cambridge St", city: "Boston", state: "MA", lat: 42.3601, lon: -71.0589 },
+  { address: "101 Congress Ave", city: "Austin", state: "TX", lat: 30.2672, lon: -97.7431 },
+  { address: "1200 Ocean Dr", city: "Miami Beach", state: "FL", lat: 25.7817, lon: -80.1300 },
+  { address: "888 Brannan St", city: "San Francisco", state: "CA", lat: 37.7699, lon: -122.4094 },
+  { address: "55 5th Ave", city: "New York", state: "NY", lat: 40.7406, lon: -73.9899 },
+  { address: "300 N State St", city: "Chicago", state: "IL", lat: 41.8884, lon: -87.6274 },
+  { address: "1800 S Grand Ave", city: "Los Angeles", state: "CA", lat: 34.0407, lon: -118.2468 },
+  { address: "501 Dexter Ave N", city: "Seattle", state: "WA", lat: 47.6242, lon: -122.3567 },
+  { address: "200 Stuart St", city: "Boston", state: "MA", lat: 42.3505, lon: -71.0754 },
+];
+
+/** Resolve full location with coords for a listing (uses presets for listings without explicit lat/lon) */
+export function getListingLocation(listing: VehicleListing): { address: string; city: string; state: string; fullAddress: string; lat: number; lon: number } {
+  const loc = listing.location;
+  const hash = listing.id.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+  const preset = LOCATION_PRESETS[hash % LOCATION_PRESETS.length];
+  if (loc?.lat != null && loc?.lon != null) {
+    const state = loc.state ?? "CA";
+    return {
+      address: loc.address,
+      city: loc.city,
+      state,
+      fullAddress: `${loc.address}, ${loc.city}, ${state}`,
+      lat: loc.lat,
+      lon: loc.lon,
+    };
+  }
+  if (loc?.address && loc?.city) {
+    const state = loc.state ?? preset.state;
+    return {
+      address: loc.address,
+      city: loc.city,
+      state,
+      fullAddress: `${loc.address}, ${loc.city}, ${state}`,
+      lat: preset.lat,
+      lon: preset.lon,
+    };
+  }
+  return {
+    ...preset,
+    fullAddress: `${preset.address}, ${preset.city}, ${preset.state}`,
+  };
+}
+
+/** OpenStreetMap embed URL (free, no API key) */
+export function getMapEmbedUrl(listing: VehicleListing): string {
+  const { lat, lon } = getListingLocation(listing);
+  const delta = 0.015;
+  const bbox = [lon - delta, lat - delta, lon + delta, lat + delta].join("%2C");
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat}%2C${lon}`;
 }
 
 export const PLACEHOLDER_IMAGES = [
@@ -36,7 +96,7 @@ export const PLACEHOLDER_IMAGES = [
 
 const listings: VehicleListing[] = [
   // Economy (12)
-  { id: "e1", title: "Tesla Model Y 2024", subtitle: "or similar electric SUV", imageUrl: "https://images.turo.com/media/vehicle/images/ewUbL3QrTLCokGPQPCpsbw.1242x745.jpg", seats: 5, luggage: 2, doors: 4, pricePerDay: 32, category: "economy", description: "Reliable and fuel-efficient compact sedan. Perfect for city driving and weekend getaways. Well-maintained with clean interior.", location: { address: "123 Market St", city: "San Francisco" }, hostId: "h1", hostName: "Alex", year: 2024, transmission: "Automatic" },
+  { id: "e1", title: "Tesla Model Y 2024", subtitle: "or similar electric SUV", imageUrl: "https://images.turo.com/media/vehicle/images/ewUbL3QrTLCokGPQPCpsbw.1242x745.jpg", seats: 5, luggage: 2, doors: 4, pricePerDay: 32, category: "economy", description: "The Tesla Model Y 2024 is a versatile all-electric SUV that combines impressive range, spacious interior, and advanced technology. With seating for five and ample cargo space, it's ideal for both daily commutes and weekend road trips.\n\nFeatures include Autopilot, a panoramic glass roof, and access to the Tesla Supercharger network for fast charging. The minimalist interior offers a premium feel with a large touchscreen and vegan leather seating. Well-maintained with regular servicing and detailed cleaning before each rental. All rentals include insurance and 24/7 roadside assistance.", location: { address: "123 Market St", city: "San Francisco", state: "CA", lat: 37.7897, lon: -122.3972 }, hostId: "h1", hostName: "Alex", year: 2024, transmission: "Automatic" },
   { id: "e2", title: "Toyota Corolla", subtitle: "or similar compact", imageUrl: PLACEHOLDER_IMAGES[1], seats: 5, luggage: 2, doors: 4, pricePerDay: 28, category: "economy" },
   { id: "e3", title: "Hyundai Elantra", subtitle: "or similar sedan", imageUrl: PLACEHOLDER_IMAGES[2], seats: 5, luggage: 2, doors: 4, pricePerDay: 35, category: "economy" },
   { id: "e4", title: "Nissan Sentra", subtitle: "or similar compact", imageUrl: PLACEHOLDER_IMAGES[3], seats: 5, luggage: 2, doors: 4, pricePerDay: 30, category: "economy" },
@@ -128,7 +188,6 @@ export function getDummyRating(listingId: string): number {
 
 const DUMMY_DETAILS: Partial<VehicleListing> = {
   description: "Well-maintained vehicle with clean interior. Perfect for your next trip. All rentals include insurance and 24/7 roadside assistance.",
-  location: { address: "Downtown pickup location", city: "San Francisco" },
   hostId: "h1",
   hostName: "Alex",
   year: 2023,
@@ -179,14 +238,57 @@ export const CAR_AMENITIES: Record<string, string[]> = {
   "Safety": ["ABS", "Airbags", "Blind spot monitoring", "Lane assist"],
 };
 
-/** Dummy reviews */
-export function getListingReviews(listingId: string): { author: string; rating: number; text: string; date: string }[] {
-  const reviews = [
-    { author: "Sarah M.", rating: 5, text: "Smooth ride and very clean. Host was responsive and flexible with pickup time.", date: "Jan 2025" },
-    { author: "James K.", rating: 5, text: "Great car for our road trip. No issues at all. Would rent again!", date: "Dec 2024" },
-    { author: "Emily R.", rating: 5, text: "Exactly as described. Easy pickup and drop-off process.", date: "Nov 2024" },
+/** Review shape for display */
+export type ListingReview = {
+  author: string;
+  location: string;
+  rating: number;
+  date: string;
+  stayDuration: string;
+  text: string;
+  avatarUrl: string;
+};
+
+/** Dummy reviews - styled like Airbnb reviews */
+export function getListingReviews(listingId: string): ListingReview[] {
+  return [
+    {
+      author: "Juno",
+      location: "Los Angeles, California",
+      rating: 5,
+      date: "1 week ago",
+      stayDuration: "Stayed a few nights",
+      text: "The car was wonderful! It's in such a convenient location and there are so many great places to explore nearby. The vehicle was clean and well maintained, which was perfect for our road trip. Would definitely rent again!",
+      avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=96&h=96&fit=crop&crop=face",
+    },
+    {
+      author: "Daniel",
+      location: "Kansas City, Missouri",
+      rating: 5,
+      date: "November 2025",
+      stayDuration: "Stayed one night",
+      text: "Best rental experience I've ever had! Super responsive host, clean car, and smooth pickup process. I've been fortunate to rent quite a bit over the years and this was top notch. I always appreciate when everything works as expected.",
+      avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=96&h=96&fit=crop&crop=face",
+    },
+    {
+      author: "Emma",
+      location: "Toronto, Canada",
+      rating: 5,
+      date: "2 weeks ago",
+      stayDuration: "Stayed a few nights",
+      text: "We loved renting this car! The host was always responsive, very friendly, and was there to answer any questions. They even gave us some great recommendations for the area. The car ran perfectly throughout our trip.",
+      avatarUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=96&h=96&fit=crop&crop=face",
+    },
+    {
+      author: "CeCe",
+      location: "Boston, Massachusetts",
+      rating: 5,
+      date: "January 2026",
+      stayDuration: "Stayed a few nights",
+      text: "Super responsive and reliable host! The car was clean, modern, and exactly as described. Pickup was smooth and the return process was hassle-free. We enjoyed our trip and would definitely rent again.",
+      avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=96&h=96&fit=crop&crop=face",
+    },
   ];
-  return reviews;
 }
 
 /** Dummy review count from listing id */
