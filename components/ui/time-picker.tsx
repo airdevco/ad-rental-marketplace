@@ -42,6 +42,8 @@ type TimePickerProps = {
   "aria-label"?: string;
   className?: string;
   triggerClassName?: string;
+  /** When false, hides the clock icon in the trigger */
+  showIcon?: boolean;
 };
 
 export function TimePicker({
@@ -53,6 +55,7 @@ export function TimePicker({
   "aria-label": ariaLabel,
   className,
   triggerClassName,
+  showIcon = true,
 }: TimePickerProps) {
   const parsed = parseTime(value);
   const [open, setOpen] = useState(false);
@@ -115,7 +118,7 @@ export function TimePicker({
             triggerClassName
           )}
         >
-          <ClockIcon className="size-4 shrink-0 text-zinc-500" aria-hidden />
+          {showIcon && <ClockIcon className="size-4 shrink-0 text-zinc-500" aria-hidden />}
           <span className="truncate">{displayText || placeholder}</span>
         </button>
       </PopoverTrigger>

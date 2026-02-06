@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import type { DateRange } from "react-day-picker";
-import { startOfDay } from "date-fns";
+import { format } from "date-fns";
 import { Star, Heart } from "@phosphor-icons/react";
 import {
   Users,
@@ -22,12 +22,17 @@ import {
   Share2,
   CheckCircle,
   Flag,
+  ChevronDown,
+  Pencil,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar } from "@/components/ui/calendar";
+import { TimePicker } from "@/components/ui/time-picker";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { DateRangePickerContent } from "@/components/landing/date-range-picker";
 import {
   Dialog,
   DialogClose,
@@ -48,6 +53,7 @@ import {
   getListingReviewCount,
   getListingLocation,
   getMapEmbedUrl,
+  PICKUP_LOCATION_OPTIONS,
   CAR_FEATURES,
   CAR_AMENITIES,
 } from "@/lib/vehicle-listings";
@@ -74,8 +80,25 @@ const REVIEW_TRUNCATE_LENGTH = 180;
 export function ListingDetail({ listing, id }: { listing: VehicleListing; id: string }) {
   const [showMoreDesc, setShowMoreDesc] = useState(false);
   const [showAllAmenities, setShowAllAmenities] = useState(false);
-  const [expandedReviews, setExpandedReviews] = useState<Set<number>>(new Set());
+  const [reviewsDialogOpen, setReviewsDialogOpen] = useState(false);
+  const [scrollToReviewIndex, setScrollToReviewIndex] = useState<number | null>(null);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [tripStartTime, setTripStartTime] = useState("10:00 AM");
+  const [tripEndTime, setTripEndTime] = useState("10:00 AM");
+  const [datesAnchor, setDatesAnchor] = useState<"start" | "end" | null>(null);
+  const [pickupLocationOverride, setPickupLocationOverride] = useState<string | null>(null);
+  const [locationEditOpen, setLocationEditOpen] = useState(false);
+  const [locationPopoverOpen, setLocationPopoverOpen] = useState(false);
+  const [locationSearchValue, setLocationSearchValue] = useState("");
+  const [isLargeViewport, setIsLargeViewport] = useState(false);
+  const datesOpen = datesAnchor !== null;
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    setIsLargeViewport(mq.matches);
+    const fn = () => setIsLargeViewport(mq.matches);
+    mq.addEventListener("change", fn);
+    return () => mq.removeEventListener("change", fn);
+  }, []);
   const [activeSection, setActiveSection] = useState<string>("overview");
   const [lineStyle, setLineStyle] = useState<{ left: number; width: number }>({ left: 0, width: 0 });
   const [copied, setCopied] = useState(false);
@@ -84,6 +107,7 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
   const navRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const ignoreObserverRef = useRef(false);
+  const reviewRefs = useRef<(HTMLDivElement | null)[]>([]);
   const { pastGallery, setPastGallery } = useListingScroll();
 
   useEffect(() => {
@@ -140,6 +164,16 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
       });
     }
   }, [activeSection, pastGallery]);
+
+  // Scroll to review when reviews dialog opens with scrollToReviewIndex
+  useEffect(() => {
+    if (!reviewsDialogOpen || scrollToReviewIndex == null) return;
+    const el = reviewRefs.current[scrollToReviewIndex];
+    if (el) {
+      const t = setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+      return () => clearTimeout(t);
+    }
+  }, [reviewsDialogOpen, scrollToReviewIndex]);
   const galleryImages = getListingGalleryImages(listing);
   const mainImage = galleryImages[0];
   const thumbnails = galleryImages.slice(1, 5);
@@ -381,10 +415,22 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
                   </span>
                 </p>
                 <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
-                  <Star size={14} weight="fill" className="text-amber-400" aria-hidden />
-                  <span className="font-medium text-foreground">{rating.toFixed(1)}</span>
+                  <Star size={14} weight="fill" className="text-amber-400 shrink-0" aria-hidden />
+                  <button
+                    type="button"
+                    onClick={() => scrollToSection("reviews")}
+                    className="font-medium text-foreground hover:underline cursor-pointer text-left"
+                  >
+                    {rating.toFixed(1)}
+                  </button>
                   <span>•</span>
-                  <span>{reviewCount} reviews</span>
+                  <button
+                    type="button"
+                    onClick={() => scrollToSection("reviews")}
+                    className="font-medium text-foreground hover:underline cursor-pointer text-left"
+                  >
+                    {reviewCount} reviews
+                  </button>
                   <span>•</span>
                   <span>Joined Mar 2024</span>
                 </p>
@@ -522,17 +568,19 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
 
           <Separator />
 
-          {/* Guest reviews */}
+          {/* Reviews */}
           <section id="reviews" className="scroll-mt-24">
-            <h2 className="text-lg font-semibold">Guest reviews</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {rating.toFixed(2)} overall rating based on {reviewCount} reviews
+            <h2 className="text-lg font-semibold">Reviews</h2>
+            <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
+              <Star size={14} weight="fill" className="text-amber-400 shrink-0" aria-hidden />
+              <span>
+                {rating.toFixed(2)} overall rating based on {reviewCount} reviews
+              </span>
             </p>
             <div className="mt-4 grid gap-6 sm:grid-cols-2">
               {reviews.map((r, i) => {
-                const isExpanded = expandedReviews.has(i);
                 const needsTruncate = r.text.length > REVIEW_TRUNCATE_LENGTH;
-                const displayText = needsTruncate && !isExpanded
+                const displayText = needsTruncate
                   ? r.text.slice(0, REVIEW_TRUNCATE_LENGTH).trim() + "..."
                   : r.text;
                 return (
@@ -564,60 +612,310 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
                       <span className="text-muted-foreground">{r.stayDuration}</span>
                     </div>
                     <p className="text-sm text-zinc-700 whitespace-pre-line">{displayText}</p>
-                    {needsTruncate && !isExpanded && (
-                      <Button
-                        variant="ghost"
-                        className="h-auto p-0 font-medium underline"
-                        onClick={() => setExpandedReviews((prev) => new Set(prev).add(i))}
+                    {needsTruncate && (
+                      <button
+                        type="button"
+                        className="font-medium underline bg-transparent hover:bg-transparent p-0 h-auto cursor-pointer"
+                        onClick={() => {
+                          setScrollToReviewIndex(i);
+                          setReviewsDialogOpen(true);
+                        }}
                       >
                         Show more
-                      </Button>
+                      </button>
                     )}
                   </div>
                 );
               })}
             </div>
-            <Button variant="ghost" className="mt-4 h-auto p-0 font-medium underline">
-              Show all {reviewCount} reviews
+            <Button
+              variant="outline"
+              className="mt-4"
+              onClick={() => {
+                setScrollToReviewIndex(null);
+                setReviewsDialogOpen(true);
+              }}
+            >
+              More reviews
             </Button>
           </section>
 
+          {/* Reviews popup */}
+          <Dialog open={reviewsDialogOpen} onOpenChange={(open) => {
+            setReviewsDialogOpen(open);
+            if (!open) setScrollToReviewIndex(null);
+          }}>
+            <DialogContent
+              className="max-h-[95vh] w-[95vw] sm:max-w-[700px] flex flex-col gap-0 p-0 overflow-hidden"
+              showCloseButton={false}
+            >
+              <DialogTitle className="sr-only">Reviews for {listing.title}</DialogTitle>
+              <div className="flex shrink-0 items-center justify-between border-b px-6 py-4">
+                <h2 className="text-xl font-semibold">Reviews</h2>
+                <DialogClose
+                  className="rounded-md p-1.5 opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-0"
+                  aria-label="Close reviews"
+                >
+                  <X className="h-5 w-5" />
+                </DialogClose>
+              </div>
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-6">
+                <p className="mb-4 flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <Star size={14} weight="fill" className="text-amber-400 shrink-0" aria-hidden />
+                  <span>
+                    {rating.toFixed(2)} overall rating based on {reviewCount} reviews
+                  </span>
+                </p>
+                <div className="flex flex-col gap-6">
+                  {reviews.map((r, i) => (
+                    <div
+                      key={i}
+                      ref={(el) => { reviewRefs.current[i] = el; }}
+                      className="space-y-3"
+                    >
+                      <div className="flex items-start gap-3">
+                        <Avatar className="size-10 shrink-0">
+                          <AvatarImage src={r.avatarUrl} alt={r.author} />
+                          <AvatarFallback>{r.author.slice(0, 1)}</AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="font-semibold">{r.author}</p>
+                          <p className="text-sm text-muted-foreground">{r.location}</p>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-1 text-sm">
+                        <div className="flex gap-0.5">
+                          {Array.from({ length: 5 }).map((_, j) => (
+                            <Star
+                              key={j}
+                              size={14}
+                              weight={j < r.rating ? "fill" : "regular"}
+                              className="text-amber-400"
+                            />
+                          ))}
+                        </div>
+                        <span className="text-muted-foreground">·</span>
+                        <span className="text-muted-foreground">{r.date}</span>
+                        <span className="text-muted-foreground">·</span>
+                        <span className="text-muted-foreground">{r.stayDuration}</span>
+                      </div>
+                      <p className="text-sm text-zinc-700 whitespace-pre-line">{r.text}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
         </div>
 
-        {/* Right column - sticky sidebar */}
-        <div className="sticky top-20 self-start pt-6 lg:pt-6">
+        {/* Right column - sticky sidebar (hidden on small viewports) */}
+        <div className="hidden lg:block sticky top-20 self-start pt-6 lg:pt-6">
           <Card>
-            <CardHeader>
-              <p className="text-sm font-semibold">Available for booking</p>
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold tabular-nums">${listing.pricePerDay}</span>
-                <span className="text-muted-foreground">/ day</span>
+            <CardContent className="p-0">
+              {/* Pricing */}
+              <div className="px-5 py-3">
+                <div className="flex flex-wrap items-baseline gap-2">
+                  <span className="text-muted-foreground line-through tabular-nums">
+                    ${Math.round(listing.pricePerDay * 2)}
+                  </span>
+                  <span className="text-2xl font-bold tabular-nums underline">
+                    ${listing.pricePerDay}/day
+                  </span>
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">Before taxes</p>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start text-left font-normal"
-                  >
-                    <CalendarIcon className="mr-2 size-4" />
-                    Select dates
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent align="start" className="w-auto p-0">
-                  <Calendar
-                    mode="range"
-                    numberOfMonths={2}
-                    selected={dateRange}
-                    onSelect={setDateRange}
-                    disabled={{ before: startOfDay(new Date()) }}
-                  />
-                </PopoverContent>
-              </Popover>
-              <Button asChild className="h-12 w-full bg-zinc-900 hover:bg-zinc-800">
-                <Link href={`/checkout?listingId=${id}`}>View availability</Link>
-              </Button>
+              <Separator />
+
+              {/* Your trip */}
+              <div className="px-5 py-3">
+                <h3 className="font-semibold">Your trip</h3>
+                <div className="mt-3 space-y-3">
+                  <div>
+                    <p className="text-sm font-medium">Trip start</p>
+                    <div className="mt-1.5 flex gap-2">
+                      <Popover open={datesAnchor === "start"} onOpenChange={(open) => setDatesAnchor(open ? "start" : null)}>
+                        <PopoverAnchor asChild>
+                          <button
+                            type="button"
+                            onClick={() => setDatesAnchor("start")}
+                            className="flex h-9 min-w-0 flex-1 items-center justify-between gap-1 rounded-md border border-input bg-transparent px-3 py-2 text-left text-sm shadow-xs"
+                          >
+                            <span className={dateRange?.from ? "text-foreground" : "text-muted-foreground"}>
+                              {dateRange?.from ? format(dateRange.from, "MMM d, yyyy") : "Select date"}
+                            </span>
+                            <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
+                          </button>
+                        </PopoverAnchor>
+                        <PopoverContent
+                          side="bottom"
+                          align={isLargeViewport ? "end" : "start"}
+                          className="w-auto p-0"
+                        >
+                          <DateRangePickerContent
+                            value={dateRange}
+                            onChange={setDateRange}
+                            onClose={() => setDatesAnchor(null)}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <TimePicker
+                        value={tripStartTime}
+                        onChange={setTripStartTime}
+                        placeholder="10:00 AM"
+                        showIcon={false}
+                        triggerClassName="h-9 w-24 rounded-md border border-input bg-transparent px-3"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Trip end</p>
+                    <div className="mt-1.5 flex gap-2">
+                      <Popover open={datesAnchor === "end"} onOpenChange={(open) => setDatesAnchor(open ? "end" : null)}>
+                        <PopoverAnchor asChild>
+                          <button
+                            type="button"
+                            onClick={() => setDatesAnchor("end")}
+                            className="flex h-9 min-w-0 flex-1 items-center justify-between gap-1 rounded-md border border-input bg-transparent px-3 py-2 text-left text-sm shadow-xs"
+                          >
+                            <span className={dateRange?.to ? "text-foreground" : "text-muted-foreground"}>
+                              {dateRange?.to ? format(dateRange.to, "MMM d, yyyy") : "Select date"}
+                            </span>
+                            <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
+                          </button>
+                        </PopoverAnchor>
+                        <PopoverContent
+                          side="bottom"
+                          align={isLargeViewport ? "end" : "start"}
+                          className="w-auto p-0"
+                        >
+                          <DateRangePickerContent
+                            value={dateRange}
+                            onChange={setDateRange}
+                            onClose={() => setDatesAnchor(null)}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <TimePicker
+                        value={tripEndTime}
+                        onChange={setTripEndTime}
+                        placeholder="10:00 AM"
+                        showIcon={false}
+                        triggerClassName="h-9 w-24 rounded-md border border-input bg-transparent px-3"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <Separator />
+
+              {/* Pickup & return location */}
+              <div className="px-5 py-3">
+                <h3 className="font-semibold">Pickup & return location</h3>
+                <div className="mt-3">
+                  {locationEditOpen ? (
+                    <div className="space-y-1.5">
+                      <Label htmlFor="pickup-location" className="text-xs font-medium text-zinc-600">
+                        Pickup & return location
+                      </Label>
+                      <Popover
+                        open={locationPopoverOpen}
+                        onOpenChange={(open) => {
+                          setLocationPopoverOpen(open);
+                          if (!open) {
+                            setTimeout(() => {
+                              const inputEl = document.getElementById("pickup-location");
+                              if (inputEl && document.activeElement !== inputEl) {
+                                setLocationEditOpen(false);
+                              }
+                            }, 0);
+                          }
+                        }}
+                        modal={false}
+                      >
+                        <PopoverAnchor asChild>
+                          <Input
+                            id="pickup-location"
+                            type="text"
+                            autoComplete="off"
+                            placeholder="City, address, or hotel"
+                            value={locationSearchValue}
+                            onChange={(e) => setLocationSearchValue(e.target.value)}
+                            onFocus={() => setLocationPopoverOpen(true)}
+                            className="min-h-10 border border-zinc-200 bg-white text-sm shadow-none focus-visible:border-[#156EF5] focus-visible:ring-0"
+                            aria-label="Pickup and return location"
+                            aria-expanded={locationPopoverOpen}
+                          />
+                        </PopoverAnchor>
+                        <PopoverContent
+                          role="listbox"
+                          align="start"
+                          sideOffset={8}
+                          className="z-[100] w-[var(--radix-popover-trigger-width)] min-w-[280px] max-w-[360px] p-0"
+                          onOpenAutoFocus={(e) => e.preventDefault()}
+                        >
+                          <ul className="max-h-[280px] overflow-auto py-1">
+                            {(() => {
+                              const filtered = locationSearchValue.trim()
+                                ? PICKUP_LOCATION_OPTIONS.filter((addr) =>
+                                    addr.toLowerCase().includes(locationSearchValue.trim().toLowerCase())
+                                  )
+                                : PICKUP_LOCATION_OPTIONS;
+                              if (filtered.length === 0) {
+                                return (
+                                  <li className="px-3 py-2 text-sm text-zinc-500">No results</li>
+                                );
+                              }
+                              return filtered.map((addr) => (
+                                <li key={addr}>
+                                  <button
+                                    type="button"
+                                    role="option"
+                                    className="w-full px-3 py-2.5 text-left text-sm text-zinc-900 hover:bg-zinc-100 focus:bg-zinc-100 focus:outline-none"
+                                    onMouseDown={(e) => {
+                                      e.preventDefault();
+                                      setPickupLocationOverride(addr);
+                                      setLocationSearchValue(addr);
+                                      setLocationEditOpen(false);
+                                      setLocationPopoverOpen(false);
+                                    }}
+                                  >
+                                    {addr}
+                                  </button>
+                                </li>
+                              ));
+                            })()}
+                          </ul>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm">{pickupLocationOverride ?? getListingLocation(listing).fullAddress}</p>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8 shrink-0"
+                        aria-label="Edit location"
+                        onClick={() => {
+                          setLocationSearchValue(pickupLocationOverride ?? getListingLocation(listing).fullAddress);
+                          setLocationEditOpen(true);
+                          setLocationPopoverOpen(true);
+                        }}
+                      >
+                        <Pencil className="size-3.5" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <Separator />
+
+              <div className="px-5 py-3">
+                <Button asChild className="h-12 w-full bg-primary hover:bg-primary/90 font-semibold">
+                  <Link href={`/checkout?listingId=${id}`}>Reserve</Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
           <Button
@@ -633,6 +931,27 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
         </div>
         </div>
       </div>
+
+      {/* Sticky bottom bar on small viewports (replaces right card) */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t bg-white shadow-[0_-1px_3px_rgba(0,0,0,0.05)]">
+        <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+          <div>
+            <div className="flex flex-wrap items-baseline gap-2">
+              <span className="text-muted-foreground line-through tabular-nums text-sm">
+                ${Math.round(listing.pricePerDay * 2)}
+              </span>
+              <span className="text-xl font-bold tabular-nums underline">
+                ${listing.pricePerDay}/day
+              </span>
+            </div>
+            <p className="mt-0.5 text-xs text-muted-foreground">Before taxes</p>
+          </div>
+          <Button asChild className="h-12 shrink-0 rounded-lg bg-primary px-6 font-semibold hover:bg-primary/90">
+            <Link href={`/checkout?listingId=${id}`}>Reserve</Link>
+          </Button>
+        </div>
+      </div>
+      <div className="h-20 lg:hidden" aria-hidden />
     </div>
   );
 }

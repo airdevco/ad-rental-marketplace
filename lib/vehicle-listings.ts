@@ -38,6 +38,11 @@ const LOCATION_PRESETS: { address: string; city: string; state: string; lat: num
   { address: "200 Stuart St", city: "Boston", state: "MA", lat: 42.3505, lon: -71.0754 },
 ];
 
+/** Full address strings for pickup location autocomplete */
+export const PICKUP_LOCATION_OPTIONS = LOCATION_PRESETS.map(
+  (p) => `${p.address}, ${p.city}, ${p.state}`
+);
+
 /** Resolve full location with coords for a listing (uses presets for listings without explicit lat/lon) */
 export function getListingLocation(listing: VehicleListing): { address: string; city: string; state: string; fullAddress: string; lat: number; lon: number } {
   const loc = listing.location;
