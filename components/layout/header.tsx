@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { List, X } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { useListingScroll } from "@/lib/listing-scroll-context";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,25 +28,28 @@ export function Header() {
   const isListingPage = pathname.startsWith("/listing/");
   const { pastGallery } = useListingScroll();
   const [scrolled, setScrolled] = useState(false);
+  const isSearchPage = pathname === "/search";
 
   // Hide header when on listing page and scrolled past gallery (tab bar replaces it)
   const hidden = isListingPage && pastGallery;
-  const [showHeaderSearch, setShowHeaderSearch] = useState(false);
+  const [showHeaderSearch, setShowHeaderSearch] = useState(isSearchPage);
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     function onScroll() {
       const y = window.scrollY;
       setScrolled(y > 0);
-      setShowHeaderSearch(isHome && y > SCROLL_THRESHOLD);
+      setShowHeaderSearch((isHome && y > SCROLL_THRESHOLD) || isSearchPage);
     }
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, [isHome]);
+  }, [isHome, isSearchPage]);
 
   const showBorder = !isHome && !scrolled && !isListingPage;
   const headerBg = scrolled ? "bg-white" : "bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80";
+  const isDesktop = useMediaQuery("(min-width: 768px)");
+  const hideLogoForSearch = showHeaderSearch && !isDesktop;
 
   if (hidden) return null;
 
@@ -53,24 +57,39 @@ export function Header() {
     <header
       className={`sticky top-0 z-50 w-full ${headerBg} ${showBorder ? "border-b border-zinc-200" : ""}`}
     >
-      <div className="container relative flex h-16 w-full max-w-[1400px] items-center justify-between gap-4">
-        <Link
-          href="/"
-          className="flex shrink-0 items-center focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:rounded-md"
-          aria-label="Rentals home"
-        >
-          <Image
-            src="https://e47b698e59208764aee00d1d8e14313c.cdn.bubble.io/f1770319743776x921681514520088300/rento.png"
-            alt="Rentals"
-            width={72}
-            height={20}
-            className="h-5 w-auto object-contain"
-            priority
-          />
-        </Link>
+      <div
+        className={cn(
+          "relative flex h-16 w-full items-center gap-4",
+          !hideLogoForSearch && "justify-between",
+          isSearchPage ? "max-w-none px-4 sm:px-6" : "container max-w-[1400px] px-4"
+        )}
+      >
+        {!hideLogoForSearch && (
+          <Link
+            href="/"
+            className="flex shrink-0 items-center focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:rounded-md"
+            aria-label="Rentals home"
+          >
+            <Image
+              src="https://e47b698e59208764aee00d1d8e14313c.cdn.bubble.io/f1770319743776x921681514520088300/rento.png"
+              alt="Rentals"
+              width={72}
+              height={20}
+              className="h-5 w-auto object-contain"
+              priority
+            />
+          </Link>
+        )}
         {showHeaderSearch && (
-          <div className="absolute left-1/2 top-1/2 w-full max-w-2xl -translate-x-1/2 -translate-y-1/2 animate-in fade-in-0 px-4 duration-200">
-            <HeaderSearchBar />
+          <div
+            className={cn(
+              "animate-in fade-in-0 duration-200 min-w-0",
+              hideLogoForSearch
+                ? "flex min-w-0 flex-1"
+                : "absolute left-1/2 top-1/2 w-full max-w-2xl -translate-x-1/2 -translate-y-1/2 px-4"
+            )}
+          >
+            <HeaderSearchBar fullWidthOnMobile={hideLogoForSearch} />
           </div>
         )}
         <div className="flex shrink-0 items-center gap-2 border-0 shadow-none">

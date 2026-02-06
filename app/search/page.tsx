@@ -1,6 +1,5 @@
 import { Suspense } from "react";
-import { SearchFilters } from "@/components/search/search-filters";
-import { SearchResults } from "@/components/search/search-results";
+import { SearchPageClient } from "@/components/search/search-page-client";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const metadata = {
@@ -8,33 +7,22 @@ export const metadata = {
   description: "Search and filter rental listings",
 };
 
-function SearchResultsFallback() {
+function SearchPageFallback() {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <Skeleton key={i} className="h-[280px] rounded-xl" />
-      ))}
+    <div className="flex h-[calc(100vh-4rem)] flex-col">
+      <div className="h-16 shrink-0 border-b bg-muted/50 animate-pulse" />
+      <div className="flex flex-1 min-h-0">
+        <div className="h-full w-full max-w-md border-r bg-muted/30 animate-pulse" />
+        <div className="hidden flex-1 md:block bg-muted/50 animate-pulse" />
+      </div>
     </div>
   );
 }
 
 export default function SearchPage() {
   return (
-    <div className="container mx-auto w-full max-w-[1400px] py-8">
-      <h1 className="text-2xl font-bold md:text-3xl">Search rentals</h1>
-      <p className="mt-1 text-muted-foreground">
-        Use filters and sort to find the right rental.
-      </p>
-      <div className="mt-6">
-        <Suspense fallback={<div className="h-10 w-full max-w-md rounded-md bg-muted animate-pulse" />}>
-          <SearchFilters />
-        </Suspense>
-      </div>
-      <div className="mt-8">
-        <Suspense fallback={<SearchResultsFallback />}>
-          <SearchResults />
-        </Suspense>
-      </div>
-    </div>
+    <Suspense fallback={<SearchPageFallback />}>
+      <SearchPageClient />
+    </Suspense>
   );
 }

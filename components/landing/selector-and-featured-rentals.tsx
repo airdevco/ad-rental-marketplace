@@ -29,7 +29,7 @@ export function SelectorAndFeaturedRentals() {
           <h2 id="featured-heading" className="text-2xl font-bold md:text-3xl">
             {title}
           </h2>
-          <div className="mt-4 grid gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-4 grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
             {listings.map((listing) => (
               <VehicleListingCard key={listing.id} listing={listing} />
             ))}

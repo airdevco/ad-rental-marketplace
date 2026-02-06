@@ -113,7 +113,7 @@ export function TimePicker({
           id={id}
           aria-label={ariaLabel ?? placeholder}
           className={cn(
-            "flex h-8 min-w-0 items-center gap-1.5 rounded-md py-0 pl-0 text-left text-sm focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0 [touch-action:manipulation] w-full max-w-[6rem]",
+            "flex h-8 min-w-0 items-center gap-1.5 rounded-md py-0 pl-0 text-left text-sm focus-visible:outline focus-visible:border focus-visible:border-primary focus-visible:ring-0 [touch-action:manipulation] w-full max-w-[6rem]",
             !displayText ? "text-zinc-400" : "text-zinc-900",
             triggerClassName
           )}

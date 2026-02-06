@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import type { DateRange } from "react-day-picker";
-import { SearchIcon, CalendarIcon, ChevronRightIcon } from "lucide-react";
+import { SearchIcon, CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,14 +12,9 @@ import {
   PopoverContent,
   PopoverAnchor,
 } from "@/components/ui/popover";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
 import { DateRangePickerContent } from "@/components/landing/date-range-picker";
 import { TimePicker } from "@/components/ui/time-picker";
+import { useSearchModal } from "@/lib/search-modal-context";
 import { cn } from "@/lib/utils";
 
 function formatDate(d: Date) {
@@ -55,7 +50,7 @@ export function HeroSearch() {
   const datesSectionRef = useRef<HTMLDivElement>(null);
   const [fromTime, setFromTime] = useState("");
   const [untilTime, setUntilTime] = useState("");
-  const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
+  const { openSearchModal } = useSearchModal();
 
   useEffect(() => {
     if (!datesOpen || !datesSectionRef.current) return;
@@ -67,17 +62,6 @@ export function HeroSearch() {
     ro.observe(el);
     return () => ro.disconnect();
   }, [datesOpen]);
-
-  // Close mobile modal when viewport is md or larger (desktop view visible)
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 768px)");
-    const handleChange = (e: MediaQueryListEvent) => {
-      if (e.matches && mobileSheetOpen) setMobileSheetOpen(false);
-    };
-    mq.addEventListener("change", handleChange);
-    if (mq.matches && mobileSheetOpen) setMobileSheetOpen(false);
-    return () => mq.removeEventListener("change", handleChange);
-  }, [mobileSheetOpen]);
 
   const filteredPlaces = whereValue.trim()
     ? GEO_OPTIONS.filter((p) =>
@@ -91,7 +75,6 @@ export function HeroSearch() {
     const where = (form.elements.namedItem("where") as HTMLInputElement)?.value?.trim();
     const params = new URLSearchParams();
     if (where) params.set("q", where);
-    setMobileSheetOpen(false);
     router.push(`/search?${params.toString()}`);
   }
 
@@ -123,7 +106,14 @@ export function HeroSearch() {
               <button
                 id="hero-search-mobile-trigger"
                 type="button"
-                onClick={() => setMobileSheetOpen(true)}
+                onClick={() =>
+                  openSearchModal({
+                    whereValue,
+                    dateRange,
+                    fromTime,
+                    untilTime,
+                  })
+                }
                 className="min-h-7 w-full border-0 bg-transparent py-0 pl-0 text-left text-sm text-zinc-600 focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0"
                 aria-label="Open search"
               >
@@ -136,7 +126,14 @@ export function HeroSearch() {
               <Button
                 type="button"
                 size="icon"
-                onClick={() => setMobileSheetOpen(true)}
+                onClick={() =>
+                  openSearchModal({
+                    whereValue,
+                    dateRange,
+                    fromTime,
+                    untilTime,
+                  })
+                }
                 className="h-9 w-9 shrink-0 rounded-full bg-[#156EF5] hover:bg-[#125bd4] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 aria-label="Open search"
               >
@@ -146,162 +143,6 @@ export function HeroSearch() {
           </div>
         </div>
       </div>
-
-      <Sheet open={mobileSheetOpen} onOpenChange={setMobileSheetOpen}>
-        <SheetContent
-          side="bottom"
-          className="rounded-t-2xl border-t p-0 max-h-[88vh] flex flex-col"
-          showCloseButton={true}
-          onOpenAutoFocus={(e) => e.preventDefault()}
-        >
-          <SheetHeader className="border-b px-4 py-2 text-left">
-            <SheetTitle className="text-lg">Search rentals</SheetTitle>
-          </SheetHeader>
-          <form
-            id="hero-search-mobile-form"
-            onSubmit={handleSubmit}
-            className="flex flex-1 flex-col overflow-auto"
-            aria-label="Search rentals"
-          >
-            <div className="flex flex-1 flex-col gap-4 p-4 pt-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="hero-where-mobile" className="text-xs font-medium text-zinc-600">
-                  Where
-                </Label>
-                <Popover open={whereOpen} onOpenChange={setWhereOpen} modal={false}>
-                  <PopoverAnchor asChild>
-                    <Input
-                      id="hero-where-mobile"
-                      name="where"
-                      type="text"
-                      autoComplete="off"
-                      placeholder="City, address, or hotel"
-                      value={whereValue}
-                      onChange={(e) => setWhereValue(e.target.value)}
-                      onFocus={() => setWhereOpen(true)}
-                      onBlur={() => {}}
-                      className="min-h-10 border border-zinc-200 bg-white text-sm shadow-none focus-visible:border-[#156EF5] focus-visible:ring-0"
-                      aria-label="Where to rent"
-                      aria-expanded={whereOpen}
-                      autoFocus={false}
-                    />
-                  </PopoverAnchor>
-                  <PopoverContent
-                    id="hero-where-listbox-mobile"
-                    role="listbox"
-                    align="start"
-                    sideOffset={8}
-                    className="z-[100] w-[var(--radix-popover-trigger-width)] min-w-[280px] max-w-[360px] p-0 md:hidden"
-                    onOpenAutoFocus={(e) => e.preventDefault()}
-                  >
-                    <ul className="max-h-[280px] overflow-auto py-1">
-                      {filteredPlaces.length === 0 ? (
-                        <li className="px-3 py-2 text-sm text-zinc-500">No results</li>
-                      ) : (
-                        filteredPlaces.map((place) => (
-                          <li key={place}>
-                            <button
-                              type="button"
-                              role="option"
-                              className="w-full px-3 py-2.5 text-left text-sm text-zinc-900 hover:bg-zinc-100 focus:bg-zinc-100 focus:outline-none"
-                              onMouseDown={(e) => {
-                                e.preventDefault();
-                                setWhereValue(place);
-                                setWhereOpen(false);
-                              }}
-                            >
-                              {place}
-                            </button>
-                          </li>
-                        ))
-                      )}
-                    </ul>
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <Popover open={datesOpen} onOpenChange={setDatesOpen} modal={false}>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-medium text-zinc-600">From</Label>
-                    <PopoverAnchor asChild>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setDatesOpen(true)}
-                          className="flex min-h-10 min-w-0 flex-1 items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 text-left text-sm text-zinc-700 focus-visible:border-[#156EF5] focus-visible:outline-none focus-visible:ring-0"
-                        >
-                          <CalendarIcon className="size-4 shrink-0 text-zinc-500" />
-                          <span className="truncate">
-                            {dateRange?.from ? formatDate(dateRange.from) : "Add dates"}
-                          </span>
-                        </button>
-                        <TimePicker
-                          id="hero-from-time-mobile"
-                          name="fromTime"
-                          value={fromTime}
-                          onChange={setFromTime}
-                          placeholder="Time"
-                          triggerClassName="min-h-10 w-full min-w-0 border border-zinc-200 rounded-lg px-3 text-sm justify-start shadow-none focus-visible:border-[#156EF5] focus-visible:ring-0"
-                        />
-                      </div>
-                    </PopoverAnchor>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-medium text-zinc-600">To</Label>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setDatesOpen(true)}
-                        className="flex min-h-10 min-w-0 flex-1 items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 text-left text-sm text-zinc-700 focus-visible:border-[#156EF5] focus-visible:outline-none focus-visible:ring-0"
-                      >
-                        <CalendarIcon className="size-4 shrink-0 text-zinc-500" />
-                        <span className="truncate">
-                          {dateRange?.to ? formatDate(dateRange.to) : "Add dates"}
-                        </span>
-                      </button>
-                      <TimePicker
-                        id="hero-until-time-mobile"
-                        name="untilTime"
-                        value={untilTime}
-                        onChange={setUntilTime}
-                        placeholder="Time"
-                        triggerClassName="min-h-10 w-full min-w-0 border border-zinc-200 rounded-lg px-3 text-sm justify-start shadow-none focus-visible:border-[#156EF5] focus-visible:ring-0"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <PopoverContent
-                  className="z-[100] max-w-full p-0 md:hidden"
-                  align="start"
-                  sideOffset={8}
-                  style={{ width: "var(--radix-popover-trigger-width)" }}
-                  onOpenAutoFocus={(e) => e.preventDefault()}
-                  onCloseAutoFocus={(e) => e.preventDefault()}
-                >
-                  <DateRangePickerContent
-                    value={dateRange}
-                    onChange={(range) => setDateRange(range)}
-                    onClose={() => setDatesOpen(false)}
-                    fullWidth
-                    compact
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            <div className="border-t p-4">
-              <Button
-                type="submit"
-                className="w-full min-h-11 rounded-xl bg-[#156EF5] text-sm font-medium hover:bg-[#125bd4]"
-              >
-                <SearchIcon className="size-5 text-white" aria-hidden />
-                Search
-              </Button>
-            </div>
-          </form>
-        </SheetContent>
-      </Sheet>
 
       {/* Desktop + smaller viewports: inline form, same height and search button size */}
       <form

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { SearchIcon, MapPin, Calendar } from "lucide-react";
+import { useSearchModal } from "@/lib/search-modal-context";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -35,8 +36,11 @@ function formatDateOnly(date: Date | undefined): string {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-export function HeaderSearchBar() {
+export function HeaderSearchBar({
+  fullWidthOnMobile = false,
+}: { fullWidthOnMobile?: boolean } = {}) {
   const router = useRouter();
+  const { openSearchModal } = useSearchModal();
   const [whereValue, setWhereValue] = useState("");
   const [whereOpen, setWhereOpen] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
@@ -58,10 +62,6 @@ export function HeaderSearchBar() {
     const params = new URLSearchParams();
     if (whereValue) params.set("q", whereValue);
     router.push(`/search?${params.toString()}`);
-  }
-
-  function handleMobileTap() {
-    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   return (
@@ -98,7 +98,7 @@ export function HeaderSearchBar() {
                 placeholder="Search..."
                 value={whereValue}
                 onChange={(e) => setWhereValue(e.target.value)}
-                className="w-full rounded-md border border-zinc-200 px-2 py-1.5 text-sm outline-none focus:border-[#156EF5]"
+                className="w-full rounded-md border border-zinc-200 px-2 py-1.5 text-sm outline-none focus-visible:border focus-visible:border-primary focus-visible:ring-0"
               />
             </div>
             <ul className="max-h-[200px] overflow-auto py-1">
@@ -215,12 +215,15 @@ export function HeaderSearchBar() {
         </div>
       </form>
 
-      {/* Mobile: tappable bar that scrolls to hero */}
+      {/* Mobile: tappable bar that opens search modal */}
       <button
         type="button"
-        onClick={handleMobileTap}
-        className="flex h-10 flex-1 items-center gap-2 overflow-hidden rounded-[99px] border border-zinc-200 bg-white px-4 shadow-sm md:hidden"
-        aria-label="Scroll to search"
+        onClick={() => openSearchModal()}
+        className={cn(
+          "flex h-10 w-full items-center gap-2 overflow-hidden rounded-[99px] border border-zinc-200 bg-white px-4 shadow-sm md:hidden",
+          fullWidthOnMobile && "min-w-0"
+        )}
+        aria-label="Open search"
       >
         <MapPin className="size-4 shrink-0 text-zinc-500" aria-hidden />
         <span className="truncate text-left text-sm text-zinc-500">

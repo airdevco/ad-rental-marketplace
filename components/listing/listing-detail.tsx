@@ -326,15 +326,15 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
       <div className="container mx-auto w-full max-w-[1400px] px-4 py-8">
         {/* Overview anchor - scroll target, right above title */}
         <div id="overview" className="scroll-mt-24" />
-        {/* Title row: car name + Wishlist/Share buttons aligned with booking card */}
-        <div className="grid gap-4 lg:grid-cols-[1fr_380px] lg:gap-8 items-start">
-          <h1 className="text-2xl font-black md:text-3xl">{listing.title}</h1>
-          <div className="flex gap-2 justify-end lg:justify-end">
+        {/* Title row: car name + Wishlist/Share buttons - icons right of title on all viewports */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="min-w-0 flex-1 text-2xl font-black md:text-3xl">{listing.title}</h1>
+          <div className="flex shrink-0 items-center gap-1.5">
             <Button
               variant="outline"
               size="sm"
               onClick={() => setWishlisted(!wishlisted)}
-              className="rounded-full border border-zinc-200 md:px-4 md:py-2 h-9 w-9 md:w-auto md:h-auto p-0 shadow-none border-0 md:border md:shadow-sm"
+              className="h-9 shrink-0 rounded-full border-zinc-200 px-2 shadow-none md:px-4 md:py-2"
               aria-label="Add to wishlist"
             >
               <Heart
@@ -350,7 +350,7 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
                   variant="outline"
                   size="sm"
                   onClick={handleShare}
-                  className="rounded-full border border-zinc-200 md:px-4 md:py-2 h-9 w-9 md:w-auto md:h-auto p-0 shadow-none border-0 md:border md:shadow-sm"
+                  className="h-9 shrink-0 rounded-full border-zinc-200 px-2 shadow-none md:px-4 md:py-2"
                   aria-label="Share"
                 >
                   <Share2 className="size-4 md:mr-2" />
@@ -396,9 +396,9 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
             <div className="flex items-start gap-4">
               <Link
                 href={listing.hostId ? `/user/${listing.hostId}` : "#"}
-                className="flex shrink-0 focus-visible:rounded-full focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex size-[45px] shrink-0 focus-visible:rounded-full focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <Avatar className="size-10">
+                <Avatar className="size-[45px]">
                   <AvatarImage
                     src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face"
                     alt={hostName}
@@ -842,7 +842,7 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
                             value={locationSearchValue}
                             onChange={(e) => setLocationSearchValue(e.target.value)}
                             onFocus={() => setLocationPopoverOpen(true)}
-                            className="min-h-10 border border-zinc-200 bg-white text-sm shadow-none focus-visible:border-[#156EF5] focus-visible:ring-0"
+                            className="min-h-10 border border-zinc-200 bg-white text-sm shadow-none focus-visible:border-primary focus-visible:ring-0"
                             aria-label="Pickup and return location"
                             aria-expanded={locationPopoverOpen}
                           />

@@ -1,12 +1,15 @@
 import type { Metadata, Viewport } from "next";
 import { NuqsAdapter } from "nuqs/adapters/next";
 import "@fontsource/inter";
+import "@fontsource/inter/500.css";
 import "@fontsource/inter/700.css";
 import "@fontsource/inter/900.css";
 import "./globals.css";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { SearchModal } from "@/components/landing/search-modal";
 import { ListingScrollProvider } from "@/lib/listing-scroll-context";
+import { SearchModalProvider } from "@/lib/search-modal-context";
 
 export const metadata: Metadata = {
   title: {
@@ -35,11 +38,14 @@ export default function RootLayout({
         </a>
         <NuqsAdapter>
           <ListingScrollProvider>
-            <Header />
-            <main id="main-content" className="flex-1 w-full">
-              {children}
-            </main>
-            <Footer />
+            <SearchModalProvider>
+              <Header />
+              <main id="main-content" className="flex-1 w-full">
+                {children}
+              </main>
+              <Footer />
+              <SearchModal />
+            </SearchModalProvider>
           </ListingScrollProvider>
         </NuqsAdapter>
       </body>

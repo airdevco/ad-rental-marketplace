@@ -1,29 +1,27 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { Star } from "@phosphor-icons/react";
 import { Users, Briefcase, DoorClosed } from "lucide-react";
 import type { VehicleListing } from "@/lib/vehicle-listings";
-import { getDummyRating } from "@/lib/vehicle-listings";
+import { getDummyRating, getListingGalleryImages } from "@/lib/vehicle-listings";
+import { ListingImageWithWishlist } from "@/components/listing/listing-image-with-wishlist";
+
+const CARD_GALLERY_LIMIT = 5;
 
 export function VehicleListingCard({ listing }: { listing: VehicleListing }) {
   const rating = listing.rating ?? getDummyRating(listing.id);
+  const images = getListingGalleryImages(listing).slice(0, CARD_GALLERY_LIMIT);
   return (
     <Link
       href={`/listing/${listing.id}`}
       className="flex flex-col"
     >
-      {/* Rounded image */}
-      <div className="aspect-[400/260] w-full overflow-hidden rounded-xl bg-zinc-100">
-        <Image
-          src={listing.imageUrl}
-          alt={listing.title}
-          width={400}
-          height={260}
-          className="object-cover"
-        />
-      </div>
+      <ListingImageWithWishlist
+        images={images}
+        alt={listing.title}
+        listingId={listing.id}
+      />
 
       {/* Content below */}
       <div className="mt-2">
