@@ -18,16 +18,16 @@ export const metadata = {
 
 export default function ForgotPasswordPage() {
   return (
-    <div className="flex min-h-[calc(100vh-3.5rem)] w-full flex-col items-center justify-center py-12">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1 text-center">
+    <div className="flex min-h-[calc(100vh-3.5rem)] w-full flex-col items-center px-4 pt-8 sm:pt-12">
+      <Card className="w-full max-w-md pt-6 pb-6">
+        <CardHeader className="space-y-1 text-left">
           <CardTitle className="text-2xl">Forgot password?</CardTitle>
           <CardDescription>
             Enter your email and we&apos;ll send you a link to reset your password.
           </CardDescription>
         </CardHeader>
         <form>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pb-0">
             <div className="space-y-2">
               <Label htmlFor="forgot-email">Email</Label>
               <Input
@@ -36,13 +36,13 @@ export default function ForgotPasswordPage() {
                 type="email"
                 autoComplete="email"
                 placeholder="you@example.com"
-                className="min-h-[44px] text-base md:text-sm"
+                className="h-11 px-3 py-2.5 text-base md:text-sm"
                 required
               />
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col gap-4">
-            <Button type="submit" className="w-full min-h-[44px]">
+          <CardFooter className="flex flex-col gap-4 pt-6">
+            <Button type="submit" className="h-11 w-full px-4 py-2.5 text-base md:text-sm">
               Send reset link
             </Button>
             <p className="text-center text-sm text-muted-foreground">

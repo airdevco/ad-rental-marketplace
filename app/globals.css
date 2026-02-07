@@ -171,12 +171,22 @@
   }
 }
 
+/* Search map: keep Leaflet panes behind header (z-50) and filter bar (z-40) */
+.search-map-container .leaflet-pane {
+  z-index: 0 !important;
+}
+.search-map-container .leaflet-top,
+.search-map-container .leaflet-bottom {
+  z-index: 0 !important;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
+    font-size: 15px;
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
   }

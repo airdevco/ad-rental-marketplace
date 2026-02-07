@@ -18,16 +18,16 @@ export const metadata = {
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-[calc(100vh-3.5rem)] w-full flex-col items-center justify-center py-12">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1 text-center">
+    <div className="flex min-h-[calc(100vh-3.5rem)] w-full flex-col items-center px-4 pt-8 sm:pt-12">
+      <Card className="w-full max-w-md pt-6 pb-6">
+        <CardHeader className="space-y-1 text-left">
           <CardTitle className="text-2xl">Log in</CardTitle>
           <CardDescription>
             Enter your email and password to access your account.
           </CardDescription>
         </CardHeader>
         <form>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pb-0">
             <div className="space-y-2">
               <Label htmlFor="login-email">Email</Label>
               <Input
@@ -36,7 +36,7 @@ export default function LoginPage() {
                 type="email"
                 autoComplete="email"
                 placeholder="you@example.com"
-                className="min-h-[44px] text-base md:text-sm"
+                className="h-11 px-3 py-2.5 text-base md:text-sm"
                 required
               />
             </div>
@@ -56,13 +56,13 @@ export default function LoginPage() {
                 type="password"
                 autoComplete="current-password"
                 placeholder="••••••••"
-                className="min-h-[44px] text-base md:text-sm"
+                className="h-11 px-3 py-2.5 text-base md:text-sm"
                 required
               />
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col gap-4">
-            <Button type="submit" className="w-full min-h-[44px]">
+          <CardFooter className="flex flex-col gap-4 pt-6">
+            <Button type="submit" className="h-11 w-full px-4 py-2.5 text-base md:text-sm">
               Log in
             </Button>
             <p className="text-center text-sm text-muted-foreground">

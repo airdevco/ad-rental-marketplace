@@ -84,6 +84,24 @@ export function getMapEmbedUrl(listing: VehicleListing): string {
   return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat}%2C${lon}`;
 }
 
+/** OpenStreetMap embed URL for multiple listings - bbox fits all locations */
+export function getMapEmbedUrlForListings(listings: VehicleListing[]): string {
+  if (listings.length === 0) {
+    const bbox = "-122.42,37.77,-122.39,37.80"; // SF default
+    return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik`;
+  }
+  const locs = listings.map((l) => getListingLocation(l));
+  const minLat = Math.min(...locs.map((p) => p.lat));
+  const maxLat = Math.max(...locs.map((p) => p.lat));
+  const minLon = Math.min(...locs.map((p) => p.lon));
+  const maxLon = Math.max(...locs.map((p) => p.lon));
+  const pad = 0.05;
+  const bbox = [minLon - pad, minLat - pad, maxLon + pad, maxLat + pad].join(
+    "%2C"
+  );
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik`;
+}
+
 export const PLACEHOLDER_IMAGES = [
   "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400&h=260&fit=crop",
   "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=400&h=260&fit=crop",

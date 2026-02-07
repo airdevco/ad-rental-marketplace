@@ -26,7 +26,7 @@ export function SelectorAndFeaturedRentals() {
       </div>
       <section className="w-full pt-1 pb-16 md:pt-1.5 md:pb-20" aria-labelledby="featured-heading">
         <div className="w-full">
-          <h2 id="featured-heading" className="text-2xl font-bold md:text-3xl">
+          <h2 id="featured-heading" className="text-2xl font-bold tracking-tight md:text-3xl">
             {title}
           </h2>
           <div className="mt-4 grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">

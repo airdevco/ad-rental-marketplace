@@ -126,31 +126,31 @@ export function Header() {
               {isLoggedIn ? (
                 <>
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard/buyer">My rentals</Link>
+                    <Link href="/dashboard/buyer" onClick={() => setMenuOpen(false)}>My rentals</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard/seller">Listings</Link>
+                    <Link href="/dashboard/seller" onClick={() => setMenuOpen(false)}>Listings</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/messages">Messages</Link>
+                    <Link href="/messages" onClick={() => setMenuOpen(false)}>Messages</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="-mx-2 my-1 h-px" />
                   <DropdownMenuItem asChild>
-                    <Link href="/login">Sign out</Link>
+                    <Link href="/login" onClick={() => setMenuOpen(false)}>Sign out</Link>
                   </DropdownMenuItem>
                 </>
               ) : (
                 <>
                   <DropdownMenuItem asChild>
-                    <Link href="/search">Browse listing</Link>
+                    <Link href="/search" onClick={() => setMenuOpen(false)}>Browse listing</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard/seller">List your vehicle</Link>
+                    <Link href="/dashboard/seller" onClick={() => setMenuOpen(false)}>List your vehicle</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="-mx-2 my-1 h-px" />
                   <div className="px-0 py-3">
                     <Button asChild size="sm" className="w-full rounded-md bg-[#156EF5] px-4 py-2.5 hover:bg-[#125bd4]">
-                      <Link href="/login">Log in or Sign up</Link>
+                      <Link href="/login" onClick={() => setMenuOpen(false)}>Log in or Sign up</Link>
                     </Button>
                   </div>
                 </>

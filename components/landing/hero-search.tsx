@@ -95,52 +95,46 @@ export function HeroSearch() {
 
   return (
     <div className="flex w-full max-w-4xl flex-col items-center gap-6 px-4 md:px-0">
-      {/* Mobile: same look as desktop (white bar, Where + search) but no From/Until; same height, no divider */}
-      <div className="h-[72px] w-full rounded-[99px] border border-zinc-200 bg-white px-5 py-1.5 shadow-sm md:hidden">
-        <div className="flex flex-col justify-center gap-0">
+      {/* Mobile: row = (Where + input as column) | (search button), same structure as desktop */}
+      <div className="flex h-12 w-full flex-row items-stretch gap-0 rounded-[99px] border border-zinc-200 bg-white px-4 py-1.5 shadow-sm md:hidden">
+        <div className="flex min-w-0 flex-1 flex-col justify-center gap-0 px-2 py-1">
           <Label htmlFor="hero-search-mobile-trigger" className="text-xs font-medium text-zinc-600">
             Where
           </Label>
-          <div className="flex items-stretch">
-            <div className="flex min-w-0 flex-1 flex-col justify-center">
-              <button
-                id="hero-search-mobile-trigger"
-                type="button"
-                onClick={() =>
-                  openSearchModal({
-                    whereValue,
-                    dateRange,
-                    fromTime,
-                    untilTime,
-                  })
-                }
-                className="min-h-7 w-full border-0 bg-transparent py-0 pl-0 text-left text-sm text-zinc-600 focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0"
-                aria-label="Open search"
-              >
-                <span className="block truncate">
-                  {searchSummary}
-                </span>
-              </button>
-            </div>
-            <div className="flex shrink-0 items-center py-1.5">
-              <Button
-                type="button"
-                size="icon"
-                onClick={() =>
-                  openSearchModal({
-                    whereValue,
-                    dateRange,
-                    fromTime,
-                    untilTime,
-                  })
-                }
-                className="h-9 w-9 shrink-0 rounded-full bg-[#156EF5] hover:bg-[#125bd4] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                aria-label="Open search"
-              >
-                <SearchIcon className="size-5 text-white" aria-hidden />
-              </Button>
-            </div>
-          </div>
+          <button
+            id="hero-search-mobile-trigger"
+            type="button"
+            onClick={() =>
+              openSearchModal({
+                whereValue,
+                dateRange,
+                fromTime,
+                untilTime,
+              })
+            }
+            className="min-h-6 w-full border-0 bg-transparent p-0 text-left text-sm text-zinc-600 focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0"
+            aria-label="Open search"
+          >
+            <span className="block truncate">{searchSummary}</span>
+          </button>
+        </div>
+        <div className="flex shrink-0 items-center py-1.5">
+          <Button
+            type="button"
+            size="icon"
+            onClick={() =>
+              openSearchModal({
+                whereValue,
+                dateRange,
+                fromTime,
+                untilTime,
+              })
+            }
+            className="h-9 w-9 shrink-0 rounded-full bg-[#156EF5] hover:bg-[#125bd4] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            aria-label="Open search"
+          >
+            <SearchIcon className="size-5 text-white" aria-hidden />
+          </Button>
         </div>
       </div>
 
@@ -166,7 +160,7 @@ export function HeroSearch() {
                 value={whereValue}
                 onChange={(e) => setWhereValue(e.target.value)}
                 onFocus={() => setWhereOpen(true)}
-                className="h-7 border-0 bg-transparent py-0 pl-0 text-left text-sm text-zinc-900 shadow-none placeholder:text-zinc-400 focus-visible:ring-0 focus-visible:ring-offset-0 min-h-[40px] sm:min-h-0 [touch-action:manipulation]"
+                className="h-7 border-0 bg-transparent py-0 pl-0 text-left text-sm text-zinc-900 shadow-none placeholder:text-zinc-400 focus-visible:border-0 focus-visible:ring-0 focus-visible:ring-offset-0 min-h-[40px] sm:min-h-0 [touch-action:manipulation]"
                 aria-label="Where to rent"
                 aria-expanded={whereOpen}
                 aria-autocomplete="list"
