@@ -29,6 +29,8 @@ export function Header() {
   const { pastGallery } = useListingScroll();
   const [scrolled, setScrolled] = useState(false);
   const isSearchPage = pathname === "/search";
+  const isMessagesPage = pathname === "/messages";
+  const isFullWidthPage = isSearchPage || isMessagesPage;
 
   // Hide header when on listing page and scrolled past gallery (tab bar replaces it)
   const hidden = isListingPage && pastGallery;
@@ -61,7 +63,7 @@ export function Header() {
         className={cn(
           "relative flex h-16 w-full items-center gap-4",
           !hideLogoForSearch && "justify-between",
-          isSearchPage ? "max-w-none px-4 sm:px-6" : "container max-w-[1400px] px-4"
+          isFullWidthPage ? "max-w-none px-4 sm:px-6" : "container max-w-[1400px] px-4"
         )}
       >
         {!hideLogoForSearch && (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { DateRange } from "react-day-picker";
 import { SearchIcon, CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -47,6 +47,7 @@ export function SearchModal() {
 
   const [whereValue, setWhereValue] = useState("");
   const [whereOpen, setWhereOpen] = useState(false);
+  const whereInputRef = useRef<HTMLInputElement>(null);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [datesOpen, setDatesOpen] = useState(false);
   const [fromTime, setFromTime] = useState("");
@@ -92,6 +93,11 @@ export function SearchModal() {
     router.push(`/search?${params.toString()}`);
   }
 
+  function isWhereFieldOrDropdown(target: EventTarget | null) {
+    const el = target as HTMLElement;
+    return el?.closest?.("[data-search-where-root]") ?? el?.closest?.("[data-search-where-dropdown]") ?? false;
+  }
+
   return (
     <Sheet open={open} onOpenChange={(o) => !o && closeSearchModal()}>
       <SheetContent
@@ -99,6 +105,9 @@ export function SearchModal() {
         className="flex max-h-[88vh] flex-col rounded-t-2xl border-t p-0"
         showCloseButton
         onOpenAutoFocus={(e) => e.preventDefault()}
+        onInteractOutside={(e) => {
+          if (isWhereFieldOrDropdown(e.target)) e.preventDefault();
+        }}
       >
         <SheetHeader className="border-b px-4 py-2 text-left">
           <SheetTitle className="text-lg">Search rentals</SheetTitle>
@@ -110,16 +119,21 @@ export function SearchModal() {
           aria-label="Search rentals"
         >
           <div className="flex flex-1 flex-col gap-4 p-4 pt-3">
-            <div className="space-y-1.5">
+            <div className="space-y-1.5" data-search-where-root>
               <Label
                 htmlFor="search-where"
                 className="text-xs font-medium text-zinc-600"
               >
                 Where
               </Label>
-              <Popover open={whereOpen} onOpenChange={setWhereOpen} modal={false}>
+              <Popover
+                open={whereOpen}
+                onOpenChange={setWhereOpen}
+                modal={false}
+              >
                 <PopoverAnchor asChild>
                   <Input
+                    ref={whereInputRef}
                     id="search-where"
                     name="where"
                     type="text"
@@ -136,11 +150,15 @@ export function SearchModal() {
                   />
                 </PopoverAnchor>
                 <PopoverContent
+                  data-search-where-dropdown
                   role="listbox"
                   align="start"
                   sideOffset={8}
                   className="z-[100] w-[var(--radix-popover-trigger-width)] min-w-[280px] max-w-[360px] p-0"
                   onOpenAutoFocus={(e) => e.preventDefault()}
+                  onInteractOutside={(e) => {
+                    if (whereInputRef.current?.contains(e.target as Node)) e.preventDefault();
+                  }}
                 >
                   <ul className="max-h-[280px] overflow-auto py-1">
                     {filteredPlaces.length === 0 ? (
@@ -230,10 +248,9 @@ export function SearchModal() {
                 </div>
               </div>
               <PopoverContent
-                className="z-[100] max-w-full p-0"
+                className="z-[100] min-w-[min(360px,100vw-2rem)] max-w-full p-0 sm:min-w-[400px]"
                 align="start"
                 sideOffset={8}
-                style={{ width: "var(--radix-popover-trigger-width)" }}
                 onOpenAutoFocus={(e) => e.preventDefault()}
                 onCloseAutoFocus={(e) => e.preventDefault()}
               >

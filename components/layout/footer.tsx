@@ -27,6 +27,8 @@ const socialLinks = [
 
 export function Footer() {
   const pathname = usePathname();
+  if (pathname === "/messages") return null;
+
   const useMinimalFooter =
     pathname?.startsWith("/checkout") ||
     pathname?.startsWith("/order/confirmation") ||

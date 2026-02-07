@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type { Map as LeafletMap } from "leaflet";
 import type { VehicleListing } from "@/lib/vehicle-listings";
 import { getListingLocation } from "@/lib/vehicle-listings";
 import "leaflet/dist/leaflet.css";
@@ -19,7 +20,7 @@ export function SearchMapLeaflet({
   className = "",
 }: SearchMapLeafletProps) {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<{ remove: () => void } | null>(null);
+  const mapInstanceRef = useRef<LeafletMap | null>(null);
   const markersRef = useRef<{ remove: () => void }[]>([]);
   const [mapReady, setMapReady] = useState(false);
 

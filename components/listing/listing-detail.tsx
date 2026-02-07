@@ -129,10 +129,11 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
 
     function updateActiveSection() {
       if (ignoreObserverRef.current) return;
+      type SectionTabId = (typeof SECTION_TABS)[number]["id"];
       const sections = SECTION_TABS.map((t) => ({
         id: t.id,
         el: document.getElementById(t.id),
-      })).filter((s): s is { id: string; el: HTMLElement } => !!s.el);
+      })).filter((s): s is { id: SectionTabId; el: HTMLElement } => !!s.el);
 
       let active: string = sections[0]?.id ?? "overview";
       for (const { id, el } of sections) {

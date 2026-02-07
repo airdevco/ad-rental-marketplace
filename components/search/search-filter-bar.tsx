@@ -1,6 +1,6 @@
 "use client";
 
-import { useQueryState } from "nuqs";
+import { createParser, useQueryState } from "nuqs";
 import { useEffect, useState } from "react";
 import { LayoutGrid, Map, FilterIcon } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -50,14 +50,16 @@ function isHybrid(title: string): boolean {
   return title.toLowerCase().includes("hybrid");
 }
 
-export function getFilteredListings(
-  listings: Array<{
-    id: string;
-    title: string;
-    pricePerDay: number;
-    seats: number;
-    category?: VehicleCategory;
-  }>,
+type ListingFilterShape = {
+  id: string;
+  title: string;
+  pricePerDay: number;
+  seats: number;
+  category?: VehicleCategory;
+};
+
+export function getFilteredListings<T extends ListingFilterShape>(
+  listings: T[],
   opts: {
     priceRange?: string;
     minPrice?: string;
@@ -67,8 +69,8 @@ export function getFilteredListings(
     categories?: VehicleCategory[];
     sort?: string;
   }
-) {
-  let result = [...listings];
+): T[] {
+  let result = [...listings] as T[];
   const {
     priceRange,
     minPrice,
@@ -130,59 +132,35 @@ export function getFilteredListings(
 }
 
 export function SearchFilterBar() {
-  const [view, setView] = useQueryState("view", {
-    defaultValue: "map",
+  const viewParser = createParser({
     parse: (v) => (v === "grid" ? "grid" : "map"),
     serialize: (v) => v,
-  });
-  const [priceRange, setPriceRange] = useQueryState("price", {
-    defaultValue: "",
+  }).withDefault("map");
+  const [view, setView] = useQueryState("view", viewParser);
+
+  const stringParser = createParser({
     parse: (v) => v ?? "",
-    serialize: (v) => v || null,
-  });
-  const [seatsMin, setSeatsMin] = useQueryState("seats", {
-    defaultValue: "",
-    parse: (v) => v ?? "",
-    serialize: (v) => v || null,
-  });
-  const [fuelType, setFuelType] = useQueryState("fuel", {
-    defaultValue: "",
-    parse: (v) => v ?? "",
-    serialize: (v) => v || null,
-  });
-  const [sort, setSort] = useQueryState("sort", {
-    defaultValue: "relevance",
+    serialize: (v) => v || "",
+  }).withDefault("");
+  const [priceRange, setPriceRange] = useQueryState("price", stringParser);
+  const [seatsMin, setSeatsMin] = useQueryState("seats", stringParser);
+  const [fuelType, setFuelType] = useQueryState("fuel", stringParser);
+  const [categories, setCategories] = useQueryState("categories", stringParser);
+  const [minPrice, setMinPrice] = useQueryState("minPrice", stringParser);
+  const [maxPrice, setMaxPrice] = useQueryState("maxPrice", stringParser);
+
+  const sortParser = createParser({
     parse: (v) => v ?? "relevance",
-    serialize: (v) => (v === "relevance" ? null : v),
-  });
-  const [categories, setCategories] = useQueryState("categories", {
-    defaultValue: "",
-    parse: (v) => v ?? "",
-    serialize: (v) => v || null,
-  });
-  const [instantBook, setInstantBook] = useQueryState("instantBook", {
-    defaultValue: "false",
+    serialize: (v) => (v === "relevance" ? "" : v),
+  }).withDefault("relevance");
+  const [sort, setSort] = useQueryState("sort", sortParser);
+
+  const boolParamParser = createParser({
     parse: (v) => v ?? "false",
-    serialize: (v) => (v === "true" ? "true" : null),
-  });
-  const [freeCancellation, setFreeCancellation] = useQueryState(
-    "freeCancellation",
-    {
-      defaultValue: "false",
-      parse: (v) => v ?? "false",
-      serialize: (v) => (v === "true" ? "true" : null),
-    }
-  );
-  const [minPrice, setMinPrice] = useQueryState("minPrice", {
-    defaultValue: "",
-    parse: (v) => v ?? "",
-    serialize: (v) => v || null,
-  });
-  const [maxPrice, setMaxPrice] = useQueryState("maxPrice", {
-    defaultValue: "",
-    parse: (v) => v ?? "",
-    serialize: (v) => v || null,
-  });
+    serialize: (v) => (v === "true" ? "true" : ""),
+  }).withDefault("false");
+  const [instantBook, setInstantBook] = useQueryState("instantBook", boolParamParser);
+  const [freeCancellation, setFreeCancellation] = useQueryState("freeCancellation", boolParamParser);
 
   const [scrolled, setScrolled] = useState(false);
   const [allFiltersOpen, setAllFiltersOpen] = useState(false);

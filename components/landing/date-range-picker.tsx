@@ -32,8 +32,8 @@ export function DateRangePickerContent({
     ? {
         root: "!w-full",
         table: "w-full table-fixed border-collapse",
-        months: "w-full flex gap-4 flex-col md:flex-row relative",
-        month: "w-full min-w-0 flex flex-col gap-2",
+        months: "w-full flex gap-4 flex-row flex-wrap justify-center sm:flex-nowrap sm:justify-start",
+        month: "w-full min-w-0 flex flex-col gap-2 flex-shrink-0",
         week: "flex w-full mt-0.5",
         ...disabledClassNames,
       }
@@ -43,8 +43,8 @@ export function DateRangePickerContent({
     ? {
         root: "!w-full",
         table: "w-full table-fixed border-collapse",
-        months: "w-full flex gap-4 flex-col md:flex-row relative",
-        month: "w-full min-w-0 flex flex-col gap-4",
+        months: "w-full flex gap-4 flex-row flex-wrap justify-center sm:flex-nowrap sm:justify-start",
+        month: "w-full min-w-0 flex flex-col gap-4 flex-shrink-0",
         ...disabledClassNames,
       }
     : undefined;

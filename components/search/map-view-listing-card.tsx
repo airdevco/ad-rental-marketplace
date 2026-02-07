@@ -28,16 +28,16 @@ export function MapViewListingCard({ listing }: { listing: VehicleListing }) {
   return (
     <Link
       href={`/listing/${listing.id}`}
-      className="block w-full text-left"
+      className="block w-full text-left group/card"
     >
       <Card className="relative flex flex-row overflow-hidden border-zinc-200 bg-white p-0 shadow-sm">
-        {/* Left: image ~40% - zoom on hover; heart inside image */}
+        {/* Left: image ~40% - zoom on card hover; heart inside image */}
         <div className="relative h-32 w-[45%] shrink-0 overflow-hidden sm:h-36">
           <Image
             src={firstImage}
             alt={listing.title}
             fill
-            className="object-cover transition-transform duration-200 ease-out hover:scale-105"
+            className="object-cover transition-transform duration-200 ease-out group-hover/card:scale-105"
             sizes="(max-width: 640px) 140px, 160px"
           />
           <button
