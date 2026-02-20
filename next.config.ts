@@ -18,7 +18,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "images.turo.com",
+        hostname: "placehold.co",
         pathname: "/**",
       },
     ],

@@ -13,10 +13,10 @@ import { SearchModalProvider } from "@/lib/search-modal-context";
 
 export const metadata: Metadata = {
   title: {
-    default: "Rentals — Find and list rentals",
-    template: "%s | Rentals",
+    default: "Rento — Find your perfect home",
+    template: "%s | Rento",
   },
-  description: "Find and list rentals in one place. Search by list or map.",
+  description: "Find and rent homes from local hosts. Browse by list or map across 500+ cities.",
 };
 
 export const viewport: Viewport = {

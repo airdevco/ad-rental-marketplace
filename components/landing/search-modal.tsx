@@ -39,6 +39,8 @@ const GEO_OPTIONS = [
   "Miami, FL",
   "Boston, MA",
   "Denver, CO",
+  "Lake Tahoe, CA",
+  "Santa Barbara, CA",
 ];
 
 export function SearchModal() {
@@ -110,13 +112,13 @@ export function SearchModal() {
         }}
       >
         <SheetHeader className="border-b px-4 py-2 text-left">
-          <SheetTitle className="text-lg">Search rentals</SheetTitle>
+          <SheetTitle className="text-lg">Search homes</SheetTitle>
         </SheetHeader>
         <form
           id="search-modal-form"
           onSubmit={handleSubmit}
           className="flex flex-1 flex-col overflow-auto"
-          aria-label="Search rentals"
+          aria-label="Search homes"
         >
           <div className="flex flex-1 flex-col gap-4 p-4 pt-3">
             <div className="space-y-1.5" data-search-where-root>
@@ -138,13 +140,13 @@ export function SearchModal() {
                     name="where"
                     type="text"
                     autoComplete="off"
-                    placeholder="City, address, or hotel"
+                    placeholder="City, neighborhood, or address"
                     value={whereValue}
                     onChange={(e) => setWhereValue(e.target.value)}
                     onFocus={() => setWhereOpen(true)}
                     onBlur={() => {}}
                     className="min-h-10 border border-zinc-200 bg-white text-sm shadow-none focus-visible:border-primary focus-visible:ring-0"
-                    aria-label="Where to rent"
+                    aria-label="Where to stay"
                     aria-expanded={whereOpen}
                     autoFocus={false}
                   />
@@ -192,7 +194,7 @@ export function SearchModal() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium text-zinc-600">
-                    From
+                    Check in
                   </Label>
                   <PopoverAnchor asChild>
                     <div className="flex items-center gap-2">
@@ -221,7 +223,7 @@ export function SearchModal() {
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium text-zinc-600">
-                    To
+                    Check out
                   </Label>
                   <div className="flex items-center gap-2">
                     <button

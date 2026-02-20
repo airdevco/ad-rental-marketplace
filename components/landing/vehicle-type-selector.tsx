@@ -3,34 +3,34 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import {
   LayoutGrid,
-  Tag,
-  Car,
-  Bus,
-  Package,
-  Sparkles,
-  Gem,
+  Building2,
+  Home,
+  Building,
+  TreePine,
+  Waves,
+  Crown,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const OPTIONS: { id: string; label: string; icon: LucideIcon }[] = [
   { id: "all", label: "All", icon: LayoutGrid },
-  { id: "economy", label: "Economy", icon: Tag },
-  { id: "suvs", label: "SUVs", icon: Car },
-  { id: "passenger-vans", label: "Passenger vans", icon: Bus },
-  { id: "pickup-truck", label: "Pickup trucks", icon: Package },
-  { id: "premium", label: "Premium", icon: Sparkles },
-  { id: "luxury", label: "Luxury", icon: Gem },
+  { id: "economy", label: "Apartments", icon: Building2 },
+  { id: "suvs", label: "Houses", icon: Home },
+  { id: "passenger-vans", label: "Condos", icon: Building },
+  { id: "pickup-truck", label: "Cabins", icon: TreePine },
+  { id: "premium", label: "Beachfront", icon: Waves },
+  { id: "luxury", label: "Luxury", icon: Crown },
 ];
 
 export const VEHICLE_TITLE_MAP: Record<string, string> = {
-  all: "All cars",
-  economy: "Economy cars",
-  suvs: "SUVs",
-  "passenger-vans": "Passenger vans",
-  "pickup-truck": "Pickup trucks",
-  premium: "Premium cars",
-  luxury: "Luxury cars",
+  all: "All homes",
+  economy: "Apartments",
+  suvs: "Houses",
+  "passenger-vans": "Condos",
+  "pickup-truck": "Cabins",
+  premium: "Beachfront homes",
+  luxury: "Luxury homes",
 };
 
 export function VehicleTypeSelector({
@@ -101,7 +101,7 @@ export function VehicleTypeSelector({
       ref={containerRef}
       className="relative flex items-center gap-2 overflow-x-auto overflow-y-hidden py-1 md:flex-wrap md:justify-center md:overflow-visible md:py-0 -mx-1 px-1 md:mx-0 md:px-0"
       role="tablist"
-      aria-label="Vehicle type"
+      aria-label="Property type"
     >
       {/* Sliding pill - desktop only; mobile uses direct bg on button */}
       <div

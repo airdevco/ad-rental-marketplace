@@ -144,10 +144,10 @@ export function Header() {
               ) : (
                 <>
                   <DropdownMenuItem asChild>
-                    <Link href="/search" onClick={() => setMenuOpen(false)}>Browse listing</Link>
+                    <Link href="/search" onClick={() => setMenuOpen(false)}>Browse homes</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard/seller" onClick={() => setMenuOpen(false)}>List your vehicle</Link>
+                    <Link href="/dashboard/seller" onClick={() => setMenuOpen(false)}>List your property</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="-mx-2 my-1 h-px" />
                   <div className="px-0 py-3">

@@ -38,6 +38,8 @@ const GEO_OPTIONS = [
   "Miami, FL",
   "Boston, MA",
   "Denver, CO",
+  "Lake Tahoe, CA",
+  "Santa Barbara, CA",
 ];
 
 export function HeroSearch() {
@@ -91,7 +93,7 @@ export function HeroSearch() {
         ]
           .filter(Boolean)
           .join(" · ")
-      : "City, address, or hotel";
+      : "City, neighborhood, or address";
 
   return (
     <div className="flex w-full max-w-4xl flex-col items-center gap-6 px-4 md:px-0">
@@ -117,6 +119,7 @@ export function HeroSearch() {
           >
             <span className="block truncate">{searchSummary}</span>
           </button>
+
         </div>
         <div className="flex shrink-0 items-center py-1.5">
           <Button
@@ -142,9 +145,8 @@ export function HeroSearch() {
       <form
         onSubmit={handleSubmit}
         className="hidden w-full min-h-12 flex-col gap-1.5 rounded-[99px] border border-zinc-200 bg-white px-5 py-1.5 shadow-sm md:flex md:min-h-12 md:flex-row md:items-stretch md:gap-0"
-        aria-label="Search rentals"
+        aria-label="Search homes"
       >
-        {/* Where - geographic autocomplete */}
         <Popover open={whereOpen} onOpenChange={setWhereOpen}>
           <div className="flex min-h-10 flex-1 flex-col justify-center gap-0.5 text-left sm:min-w-0 sm:rounded-l-[99px] sm:px-3 sm:py-1 md:min-h-12 lg:min-w-[200px] lg:max-w-[320px]">
             <Label htmlFor="hero-where" className="text-xs font-medium text-zinc-600">
@@ -156,12 +158,12 @@ export function HeroSearch() {
                 name="where"
                 type="text"
                 autoComplete="off"
-                placeholder="City, address, or hotel"
+                placeholder="City, neighborhood, or address"
                 value={whereValue}
                 onChange={(e) => setWhereValue(e.target.value)}
                 onFocus={() => setWhereOpen(true)}
                 className="h-7 border-0 bg-transparent py-0 pl-0 text-left text-sm text-zinc-900 shadow-none placeholder:text-zinc-400 focus-visible:border-0 focus-visible:ring-0 focus-visible:ring-offset-0 min-h-[40px] sm:min-h-0 [touch-action:manipulation]"
-                aria-label="Where to rent"
+                aria-label="Where to stay"
                 aria-expanded={whereOpen}
                 aria-autocomplete="list"
                 aria-controls="hero-where-listbox"
@@ -210,9 +212,8 @@ export function HeroSearch() {
               className="hidden flex-1 flex-col gap-1.5 sm:min-w-0 sm:flex-row sm:gap-0 sm:pr-3 sm:py-1 lg:flex"
               style={{ minWidth: "min(100%, 360px)" }}
             >
-              {/* From - divider on left is only this block's height */}
               <div className="flex flex-1 flex-col gap-0.5 text-left sm:min-w-0 sm:border-l sm:border-zinc-200 sm:pl-3 sm:pr-4">
-                <Label className="text-xs font-medium text-zinc-600">From</Label>
+                <Label className="text-xs font-medium text-zinc-600">Check in</Label>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
@@ -240,9 +241,8 @@ export function HeroSearch() {
                   />
                 </div>
               </div>
-              {/* Until - divider on left is only this block's height */}
               <div className="flex flex-1 flex-col gap-0.5 text-left sm:min-w-0 sm:border-l sm:border-zinc-200 sm:pl-3 sm:pr-0">
-                <Label className="text-xs font-medium text-zinc-600">To</Label>
+                <Label className="text-xs font-medium text-zinc-600">Check out</Label>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
@@ -292,7 +292,7 @@ export function HeroSearch() {
             type="submit"
             size="icon"
             className="h-9 w-9 shrink-0 rounded-full bg-[#156EF5] hover:bg-[#125bd4] focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#156EF5] [touch-action:manipulation]"
-            aria-label="Search rentals"
+            aria-label="Search homes"
           >
             <SearchIcon className="size-5 text-white" aria-hidden />
           </Button>

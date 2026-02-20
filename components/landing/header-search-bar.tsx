@@ -29,6 +29,8 @@ const GEO_OPTIONS = [
   "Miami, FL",
   "Boston, MA",
   "Denver, CO",
+  "Lake Tahoe, CA",
+  "Santa Barbara, CA",
 ];
 
 function formatDateOnly(date: Date | undefined): string {
@@ -70,9 +72,8 @@ export function HeaderSearchBar({
       <form
         onSubmit={handleSubmit}
         className="hidden h-10 w-full items-center overflow-hidden rounded-[99px] border border-zinc-200 bg-white shadow-sm md:flex"
-        aria-label="Search rentals"
+        aria-label="Search homes"
       >
-        {/* Location - clickable to open popover */}
         <Popover open={whereOpen} onOpenChange={setWhereOpen} modal={false}>
           <PopoverAnchor asChild>
             <button
@@ -138,7 +139,7 @@ export function HeaderSearchBar({
                     !startDateLabel && !fromTime && "text-zinc-400"
                   )}
                 >
-                  {startDateLabel || "Start date"}
+                  {startDateLabel || "Check in"}
                 </span>
               </button>
               <div
@@ -185,7 +186,7 @@ export function HeaderSearchBar({
                 !endDateLabel && !untilTime && "text-zinc-400"
               )}
             >
-              {endDateLabel || "End date"}
+              {endDateLabel || "Check out"}
             </span>
           </button>
           <div
@@ -208,7 +209,7 @@ export function HeaderSearchBar({
             type="submit"
             size="icon"
             className="h-8 w-8 shrink-0 rounded-full bg-[#156EF5] hover:bg-[#125bd4]"
-            aria-label="Search rentals"
+            aria-label="Search homes"
           >
             <SearchIcon className="size-4 text-white" aria-hidden />
           </Button>
@@ -227,8 +228,8 @@ export function HeaderSearchBar({
       >
         <MapPin className="size-4 shrink-0 text-zinc-500" aria-hidden />
         <span className="truncate text-left text-sm text-zinc-500">
-          {whereValue || "Where"} · {startDateLabel || "Start date"} ·{" "}
-          {endDateLabel || "End date"}
+          {whereValue || "Where"} · {startDateLabel || "Check in"} ·{" "}
+          {endDateLabel || "Check out"}
         </span>
         <div className="ml-auto flex size-8 shrink-0 items-center justify-center rounded-full bg-[#156EF5]">
           <SearchIcon className="size-4 text-white" aria-hidden />

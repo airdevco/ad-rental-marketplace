@@ -84,7 +84,7 @@ export function Footer() {
               />
             </Link>
             <p className="mt-2 text-sm text-muted-foreground">
-              Find your perfect ride and rent cars from local hosts
+              Find your perfect home and rent from local hosts.
             </p>
           </div>
           <nav aria-label="Footer navigation" className="flex gap-8">
