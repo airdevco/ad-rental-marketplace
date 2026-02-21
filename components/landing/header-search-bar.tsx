@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { DateRange } from "react-day-picker";
-import { SearchIcon, MapPin, Calendar } from "lucide-react";
+import { SearchIcon, MapPin } from "lucide-react";
 import { useSearchModal } from "@/lib/search-modal-context";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,7 +12,12 @@ import {
   PopoverAnchor,
 } from "@/components/ui/popover";
 import { DateRangePickerContent } from "@/components/landing/date-range-picker";
-import { TimePicker } from "@/components/ui/time-picker";
+import {
+  GuestPicker,
+  DEFAULT_GUESTS,
+  guestSummary,
+} from "@/components/landing/guest-picker";
+import type { Guests } from "@/components/landing/guest-picker";
 import { cn } from "@/lib/utils";
 
 const GEO_OPTIONS = [
@@ -33,9 +38,13 @@ const GEO_OPTIONS = [
   "Santa Barbara, CA",
 ];
 
-function formatDateOnly(date: Date | undefined): string {
-  if (!date) return "";
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+function formatDateShort(d: Date) {
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+function formatDateRange(range: DateRange | undefined) {
+  if (!range?.from) return "";
+  if (!range.to) return formatDateShort(range.from);
+  return `${formatDateShort(range.from)} – ${formatDateShort(range.to)}`;
 }
 
 export function HeaderSearchBar({
@@ -47,8 +56,8 @@ export function HeaderSearchBar({
   const [whereOpen, setWhereOpen] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [datesOpen, setDatesOpen] = useState(false);
-  const [fromTime, setFromTime] = useState("");
-  const [untilTime, setUntilTime] = useState("");
+  const [guests, setGuests] = useState<Guests>(DEFAULT_GUESTS);
+  const [guestsOpen, setGuestsOpen] = useState(false);
 
   const filteredPlaces = whereValue.trim()
     ? GEO_OPTIONS.filter((p) =>
@@ -56,8 +65,8 @@ export function HeaderSearchBar({
       )
     : GEO_OPTIONS;
 
-  const startDateLabel = dateRange?.from ? formatDateOnly(dateRange.from) : "";
-  const endDateLabel = dateRange?.to ? formatDateOnly(dateRange.to) : "";
+  const dateSummary = formatDateRange(dateRange);
+  const guestText = guestSummary(guests);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -66,40 +75,49 @@ export function HeaderSearchBar({
     router.push(`/search?${params.toString()}`);
   }
 
+  const sectionCls =
+    "flex min-w-0 flex-1 flex-col justify-center gap-0.5 px-4 py-2 hover:bg-black/5 transition-colors cursor-pointer";
+  const labelCls = "text-xs font-semibold text-zinc-900 leading-none";
+  const valueCls = "text-sm truncate leading-none mt-0.5";
+
   return (
     <>
-      {/* Desktop: 3-section pill with dividers */}
+      {/* Desktop: 3-section pill */}
       <form
         onSubmit={handleSubmit}
-        className="hidden h-10 w-full items-center overflow-hidden rounded-[99px] border border-zinc-200 bg-white shadow-sm md:flex"
+        className="hidden h-12 w-full items-center overflow-hidden rounded-[99px] border border-zinc-200 bg-white md:flex"
         aria-label="Search homes"
       >
+        {/* Where */}
         <Popover open={whereOpen} onOpenChange={setWhereOpen} modal={false}>
           <PopoverAnchor asChild>
-            <button
-              type="button"
+            <div
+              className={cn(sectionCls, "pl-5")}
               onClick={() => setWhereOpen(true)}
-              className="flex min-w-0 flex-1 items-center gap-2 px-4 py-2 text-left text-sm hover:bg-zinc-50 focus:outline-none focus:ring-0"
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === "Enter" && setWhereOpen(true)}
             >
-              <MapPin className="size-4 shrink-0 text-zinc-500" aria-hidden />
-              <span className={cn("truncate", !whereValue && "text-zinc-400")}>
-                {whereValue || "Where"}
+              <span className={labelCls}>Where</span>
+              <span className={cn(valueCls, whereValue ? "text-zinc-900" : "text-zinc-400")}>
+                {whereValue || "Search destinations"}
               </span>
-            </button>
+            </div>
           </PopoverAnchor>
           <PopoverContent
             align="start"
-            sideOffset={4}
-            className="w-64 p-0"
+            sideOffset={8}
+            className="w-72 p-0"
             onOpenAutoFocus={(e) => e.preventDefault()}
           >
-            <div className="border-b p-2">
+            <div className="border-b border-zinc-100 p-2">
               <input
                 type="text"
-                placeholder="Search..."
+                placeholder="Search destinations..."
                 value={whereValue}
                 onChange={(e) => setWhereValue(e.target.value)}
-                className="w-full rounded-md border border-zinc-200 px-2 py-1.5 text-sm outline-none focus-visible:border focus-visible:border-primary focus-visible:ring-0"
+                className="w-full rounded-[5px] border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-zinc-400"
+                autoFocus
               />
             </div>
             <ul className="max-h-[200px] overflow-auto py-1">
@@ -121,44 +139,29 @@ export function HeaderSearchBar({
           </PopoverContent>
         </Popover>
 
-        <div className="h-5 w-px shrink-0 bg-zinc-200" aria-hidden />
+        <div className="flex shrink-0 self-stretch" aria-hidden>
+          <div className="h-full w-px bg-zinc-300/60" />
+        </div>
 
-        {/* Start date + time (inline, time next to date) */}
+        {/* When */}
         <Popover open={datesOpen} onOpenChange={setDatesOpen} modal={false}>
           <PopoverAnchor asChild>
-            <div className="flex min-w-0 flex-1 items-center gap-2 px-4 py-2 hover:bg-zinc-50">
-              <button
-                type="button"
-                onClick={() => setDatesOpen(true)}
-                className="flex min-w-0 flex-1 items-center gap-2 text-left text-sm focus:outline-none focus:ring-0"
-              >
-                <Calendar className="size-4 shrink-0 text-zinc-500" aria-hidden />
-                <span
-                  className={cn(
-                    "truncate",
-                    !startDateLabel && !fromTime && "text-zinc-400"
-                  )}
-                >
-                  {startDateLabel || "Check in"}
-                </span>
-              </button>
-              <div
-                className="shrink-0"
-                onClick={(e) => e.stopPropagation()}
-                onMouseDown={(e) => e.stopPropagation()}
-              >
-                <TimePicker
-                  value={fromTime}
-                  onChange={setFromTime}
-                  placeholder="Time"
-                  triggerClassName="h-7 min-w-0 rounded border-0 bg-transparent px-1 text-sm shadow-none focus:ring-0 hover:bg-transparent"
-                />
-              </div>
+            <div
+              className={sectionCls}
+              onClick={() => setDatesOpen(true)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === "Enter" && setDatesOpen(true)}
+            >
+              <span className={labelCls}>When</span>
+              <span className={cn(valueCls, dateSummary ? "text-zinc-900" : "text-zinc-400")}>
+                {dateSummary || "Add dates"}
+              </span>
             </div>
           </PopoverAnchor>
           <PopoverContent
             align="start"
-            sideOffset={4}
+            sideOffset={8}
             className="w-auto p-0"
             onOpenAutoFocus={(e) => e.preventDefault()}
           >
@@ -170,45 +173,42 @@ export function HeaderSearchBar({
           </PopoverContent>
         </Popover>
 
-        <div className="h-5 w-px shrink-0 bg-zinc-200" aria-hidden />
-
-        {/* End date + time (same popover) */}
-        <div className="flex min-w-0 flex-1 items-center gap-2 px-4 py-2 hover:bg-zinc-50">
-          <button
-            type="button"
-            onClick={() => setDatesOpen(true)}
-            className="flex min-w-0 flex-1 items-center gap-2 text-left text-sm focus:outline-none focus:ring-0"
-          >
-            <Calendar className="size-4 shrink-0 text-zinc-500" aria-hidden />
-            <span
-              className={cn(
-                "truncate",
-                !endDateLabel && !untilTime && "text-zinc-400"
-              )}
-            >
-              {endDateLabel || "Check out"}
-            </span>
-          </button>
-          <div
-            className="shrink-0"
-            onClick={(e) => e.stopPropagation()}
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            <TimePicker
-              value={untilTime}
-              onChange={setUntilTime}
-              placeholder="Time"
-              triggerClassName="h-7 min-w-0 rounded border-0 bg-transparent px-1 text-sm shadow-none focus:ring-0 hover:bg-transparent"
-            />
-          </div>
+        <div className="flex shrink-0 self-stretch" aria-hidden>
+          <div className="h-full w-px bg-zinc-300/60" />
         </div>
 
-        {/* Search button - primary color, no divider */}
+        {/* Who */}
+        <Popover open={guestsOpen} onOpenChange={setGuestsOpen} modal={false}>
+          <PopoverAnchor asChild>
+            <div
+              className={sectionCls}
+              onClick={() => setGuestsOpen(true)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === "Enter" && setGuestsOpen(true)}
+            >
+              <span className={labelCls}>Who</span>
+              <span className={cn(valueCls, guestText ? "text-zinc-900" : "text-zinc-400")}>
+                {guestText || "Add guests"}
+              </span>
+            </div>
+          </PopoverAnchor>
+          <PopoverContent
+            align="end"
+            sideOffset={8}
+            className="w-80 p-0"
+            onOpenAutoFocus={(e) => e.preventDefault()}
+          >
+            <GuestPicker value={guests} onChange={setGuests} />
+          </PopoverContent>
+        </Popover>
+
+        {/* Search button */}
         <div className="flex shrink-0 items-center p-1.5 pl-2 pr-2">
           <Button
             type="submit"
             size="icon"
-            className="h-8 w-8 shrink-0 rounded-full bg-[#156EF5] hover:bg-[#125bd4]"
+            className="h-9 w-9 shrink-0 rounded-full bg-[#156EF5] hover:bg-[#125bd4]"
             aria-label="Search homes"
           >
             <SearchIcon className="size-4 text-white" aria-hidden />
@@ -219,17 +219,16 @@ export function HeaderSearchBar({
       {/* Mobile: tappable bar that opens search modal */}
       <button
         type="button"
-        onClick={() => openSearchModal()}
+        onClick={() => openSearchModal({ whereValue, dateRange, guests })}
         className={cn(
-          "flex h-10 w-full items-center gap-2 overflow-hidden rounded-[99px] border border-zinc-200 bg-white px-4 shadow-sm md:hidden",
+          "flex h-10 w-full items-center gap-2 overflow-hidden rounded-[99px] border border-zinc-200 bg-white px-4 md:hidden",
           fullWidthOnMobile && "min-w-0"
         )}
         aria-label="Open search"
       >
         <MapPin className="size-4 shrink-0 text-zinc-500" aria-hidden />
         <span className="truncate text-left text-sm text-zinc-500">
-          {whereValue || "Where"} · {startDateLabel || "Check in"} ·{" "}
-          {endDateLabel || "Check out"}
+          {whereValue || "Where"} · {dateSummary || "Add dates"} · {guestText || "Add guests"}
         </span>
         <div className="ml-auto flex size-8 shrink-0 items-center justify-center rounded-full bg-[#156EF5]">
           <SearchIcon className="size-4 text-white" aria-hidden />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useCallback, useLayoutEffect } from "react";
 import {
   LayoutGrid,
   Building2,
@@ -33,6 +33,31 @@ export const VEHICLE_TITLE_MAP: Record<string, string> = {
   luxury: "Luxury homes",
 };
 
+function useIndicatorPosition(
+  selected: string,
+  buttonRefs: React.MutableRefObject<Record<string, HTMLButtonElement | null>>
+) {
+  const [style, setStyle] = useState({ left: 0, width: 0 });
+
+  useLayoutEffect(() => {
+    const el = buttonRefs.current[selected];
+    if (!el) return;
+
+    const update = () => {
+      setStyle({ left: el.offsetLeft, width: el.offsetWidth });
+    };
+
+    update();
+
+    const ro = new ResizeObserver(update);
+    ro.observe(el.parentElement ?? el);
+
+    return () => ro.disconnect();
+  }, [selected, buttonRefs]);
+
+  return style;
+}
+
 export function VehicleTypeSelector({
   value,
   onChange,
@@ -43,31 +68,8 @@ export function VehicleTypeSelector({
   const [internalSelected, setInternalSelected] = useState("all");
   const selected = value ?? internalSelected;
   const setSelected = onChange ?? setInternalSelected;
-  const containerRef = useRef<HTMLDivElement>(null);
   const buttonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
-  const [pillStyle, setPillStyle] = useState({ left: 0, width: 0 });
-
-  function measurePill() {
-    const btn = selected ? buttonRefs.current[selected] : null;
-    const container = containerRef.current;
-    if (!btn || !container) return;
-    const cr = container.getBoundingClientRect();
-    const br = btn.getBoundingClientRect();
-    setPillStyle({ left: br.left - cr.left, width: br.width });
-  }
-
-  useEffect(() => {
-    const t = requestAnimationFrame(measurePill);
-    return () => cancelAnimationFrame(t);
-  }, [selected]);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    const ro = new ResizeObserver(() => measurePill());
-    ro.observe(container);
-    return () => ro.disconnect();
-  }, [selected]);
+  const indicatorStyle = useIndicatorPosition(selected, buttonRefs);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent, currentId: string) => {
@@ -98,49 +100,42 @@ export function VehicleTypeSelector({
 
   return (
     <div
-      ref={containerRef}
-      className="relative flex items-center gap-2 overflow-x-auto overflow-y-hidden py-1 md:flex-wrap md:justify-center md:overflow-visible md:py-0 -mx-1 px-1 md:mx-0 md:px-0"
+      className="flex w-full items-end justify-center overflow-x-auto overflow-y-hidden -mx-4 px-4 md:mx-0 md:px-0"
       role="tablist"
       aria-label="Property type"
     >
-      {/* Sliding pill - desktop only; mobile uses direct bg on button */}
-      <div
-        className="pointer-events-none absolute top-0 hidden h-9 rounded-md bg-zinc-900 transition-all duration-300 ease-out md:block"
-        style={{ left: pillStyle.left, width: pillStyle.width }}
-        aria-hidden
-      />
-      {OPTIONS.map(({ id, label, icon: Icon }) => {
-        const isSelected = selected === id;
-        return (
-          <button
-            key={id}
-            ref={(el) => {
-              buttonRefs.current[id] = el;
-            }}
-            type="button"
-            role="tab"
-            aria-selected={isSelected}
-            tabIndex={isSelected ? 0 : -1}
-            onClick={() => setSelected(id)}
-            onKeyDown={(e) => handleKeyDown(e, id)}
-            className={cn(
-              "relative z-10 inline-flex h-9 shrink-0 items-center gap-2 rounded-md px-3 text-sm font-medium transition-colors duration-200 focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 has-[>svg]:px-2.5",
-              isSelected
-                ? "bg-zinc-900 text-white md:bg-transparent"
-                : "text-zinc-900 hover:bg-zinc-100"
-            )}
-          >
-            <Icon
+      <div className="relative flex items-end justify-center">
+        {OPTIONS.map(({ id, label, icon: Icon }) => {
+          const isSelected = selected === id;
+          return (
+            <button
+              key={id}
+              ref={(el) => {
+                buttonRefs.current[id] = el;
+              }}
+              type="button"
+              role="tab"
+              aria-selected={isSelected}
+              tabIndex={isSelected ? 0 : -1}
+              onClick={() => setSelected(id)}
+              onKeyDown={(e) => handleKeyDown(e, id)}
               className={cn(
-                "size-4 shrink-0",
-                (id === "suvs" || id === "passenger-vans") && "scale-110"
+                "inline-flex shrink-0 flex-col items-center gap-1.5 px-4 pb-3 pt-1 text-xs font-medium transition-colors duration-150 focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border-b-2 border-transparent -mb-px",
+                isSelected ? "text-zinc-900" : "text-zinc-400 hover:text-zinc-600"
               )}
-              aria-hidden
-            />
-            {label}
-          </button>
-        );
-      })}
+            >
+              <Icon className="size-5 shrink-0" aria-hidden />
+              {label}
+            </button>
+          );
+        })}
+        {/* Sliding indicator on the divider line; lives in scrollable content so it moves with tabs */}
+        <div
+          className="pointer-events-none absolute bottom-0 left-0 h-0.5 bg-zinc-900 transition-[left,width] duration-200 ease-out"
+          style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
+          aria-hidden
+        />
+      </div>
     </div>
   );
 }

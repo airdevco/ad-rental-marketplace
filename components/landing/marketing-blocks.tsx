@@ -1,83 +1,51 @@
 import Link from "next/link";
 import Image from "next/image";
-import {
-  ShieldCheck,
-  Clock,
-  Search,
-  CalendarCheck,
-  KeyRound,
-  Headset,
-  TrendingUp,
-  Home,
-  Star,
-  ArrowRight,
-  Map,
-} from "lucide-react";
+import { ArrowRight, Search, CalendarCheck, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 
 /* ─── How It Works ─── */
 
 const steps = [
   {
-    icon: Search,
     title: "Find your place",
-    description:
-      "Browse hundreds of homes near you. Filter by price, type, and dates to find your perfect match.",
+    description: "Browse by location, dates, and type. Narrow by bedrooms, price, and more.",
+    icon: Search,
   },
   {
-    icon: CalendarCheck,
     title: "Book instantly",
-    description:
-      "Reserve in seconds with flexible check-in times. No paperwork hassle, just a seamless booking.",
+    description: "Reserve in seconds with no paperwork. Confirm and you're set.",
+    icon: CalendarCheck,
   },
   {
-    icon: KeyRound,
     title: "Move in",
-    description:
-      "Self check-in with the host, or use keyless entry. Settle in with full protection included.",
+    description: "Self check-in with keyless entry. Full protection included with every stay.",
+    icon: KeyRound,
   },
 ];
 
 export function HowItWorks() {
   return (
-    <section className="bg-zinc-50 py-20 md:py-24" aria-labelledby="how-heading">
+    <section className="py-20" aria-labelledby="how-heading">
       <div className="container mx-auto max-w-[1400px]">
-        <div>
-          <span className="mb-2 block text-xs font-semibold uppercase tracking-widest text-primary">
-            How it works
-          </span>
-          <h2
-            id="how-heading"
-            className="text-2xl font-bold tracking-tight md:text-3xl"
-          >
-            Renting a home is easy
-          </h2>
-        </div>
-
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
-          {steps.map((step, i) => (
-            <div
-              key={step.title}
-              className="relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-8 transition-shadow duration-200 hover:shadow-lg"
-            >
-              <div className="absolute left-0 right-0 top-0 h-[3px] bg-gradient-to-r from-primary to-blue-400" />
-              <div className="mb-5 flex items-center gap-2 text-xs font-bold text-primary">
-                <span className="flex size-7 items-center justify-center rounded-full bg-primary/10 text-xs font-extrabold text-primary">
-                  {i + 1}
-                </span>
-                Step {i === 0 ? "one" : i === 1 ? "two" : "three"}
+        <p className="mb-3 text-center text-xs font-medium uppercase tracking-widest text-zinc-400">
+          How it works
+        </p>
+        <h2 id="how-heading" className="mb-12 text-center text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl">
+          Simple steps to your next stay
+        </h2>
+        <div className="grid gap-12 sm:grid-cols-3 sm:gap-8">
+          {steps.map((s) => {
+            const Icon = s.icon;
+            return (
+              <div key={s.title} className="flex flex-col items-center text-center">
+                <Icon className="size-10 shrink-0 text-zinc-400 sm:size-12" strokeWidth={1.5} aria-hidden />
+                <h3 className="mt-5 text-lg font-semibold text-zinc-900 sm:text-xl">{s.title}</h3>
+                <p className="mt-2 max-w-[260px] text-[15px] leading-relaxed text-zinc-500">{s.description}</p>
               </div>
-              <div className="mb-4 flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <step.icon className="size-6" strokeWidth={1.75} />
-              </div>
-              <h3 className="mb-2 text-lg font-bold">{step.title}</h3>
-              <p className="text-sm leading-relaxed text-zinc-500">
-                {step.description}
-              </p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
@@ -115,23 +83,22 @@ const destinations = [
 
 export function PopularDestinations() {
   return (
-    <section className="py-20 md:py-24" aria-labelledby="dest-heading">
+    <section className="py-20" aria-labelledby="dest-heading">
       <div className="container mx-auto max-w-[1400px]">
-        <div className="mb-8 flex items-end justify-between gap-4">
-          <div>
-            <span className="mb-2 block text-xs font-semibold uppercase tracking-widest text-primary">
-              Explore
-            </span>
-            <h2 id="dest-heading" className="text-2xl font-bold tracking-tight md:text-3xl">
-              Popular destinations
-            </h2>
-          </div>
-          <Link href="/search" className="hidden text-sm font-semibold underline md:inline">
-            View all rentals
+        <div className="mb-10 flex items-center gap-3">
+          <h2 id="dest-heading" className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl">
+            Popular destinations
+          </h2>
+          <Link
+            href="/search"
+            className="group/viewall flex size-10 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-zinc-900 transition-transform duration-200 ease-out hover:scale-110"
+            aria-label="View all destinations"
+          >
+            <ArrowRight className="size-5" aria-hidden />
           </Link>
         </div>
 
-        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {destinations.map((d) => (
             <Link
               key={d.city}
@@ -143,24 +110,28 @@ export function PopularDestinations() {
                   src={d.img}
                   alt={d.city}
                   fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
                   sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 25vw"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/5 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-5">
-                  <p className="text-base font-bold text-white">
+                  <p className="text-[15px] font-semibold text-white">
                     {d.city}, {d.state}
                   </p>
-                  <p className="mt-0.5 text-sm text-white/80">{d.count}</p>
+                  <p className="mt-0.5 text-sm text-white/70">{d.count}</p>
                 </div>
               </div>
             </Link>
           ))}
         </div>
 
-        <div className="mt-7 text-center">
-          <Link href="/search" className="text-sm font-semibold underline">
-            View all rentals
+        <div className="mt-8 flex justify-center md:hidden">
+          <Link
+            href="/search"
+            className="flex size-10 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-zinc-900 transition-transform duration-200 ease-out hover:scale-110"
+            aria-label="View all destinations"
+          >
+            <ArrowRight className="size-5" aria-hidden />
           </Link>
         </div>
       </div>
@@ -168,152 +139,77 @@ export function PopularDestinations() {
   );
 }
 
-/* ─── Testimonials ─── */
+/* ─── Testimonial ─── */
 
 const reviews = [
   {
     name: "Sarah M.",
     image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=96&h=96&fit=crop&crop=face",
-    role: "Stayed in a downtown loft",
-    rating: 5,
-    body: "Incredibly smooth experience from booking to checkout. The home was spotless, and the host was super responsive. Will definitely book again!",
-    gradient: "from-primary to-blue-400",
+    role: "Downtown loft · San Francisco",
+    body: "Incredibly smooth from booking to checkout. The home was spotless and check-in was completely keyless.",
   },
   {
-    name: "James K.",
+    name: "James R.",
     image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=96&h=96&fit=crop&crop=face",
-    role: "Stayed in a beach house",
-    rating: 5,
-    body: "Way better than hotels. Check-in took 2 minutes with the smart lock, no paperwork at all. The pricing was transparent and the place was gorgeous.",
-    gradient: "from-zinc-700 to-zinc-500",
+    role: "Beachfront cottage · Miami",
+    body: "Better than any hotel I've stayed in. The host was thoughtful, the space was beautiful, and the price was unbeatable.",
   },
   {
-    name: "Priya R.",
+    name: "Priya K.",
     image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=96&h=96&fit=crop&crop=face",
-    role: "Stayed in a family home",
-    rating: 5,
-    body: "Perfect for our family vacation. The host even left welcome snacks and local recommendations. Communication was fantastic throughout our stay.",
-    gradient: "from-violet-500 to-purple-400",
+    role: "Studio apartment · New York",
+    body: "So easy to find exactly what I needed. Filters are intuitive and I had a confirmed booking in under two minutes.",
+  },
+  {
+    name: "Marcus T.",
+    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=96&h=96&fit=crop&crop=face",
+    role: "House · Austin",
+    body: "Perfect for a month-long stay. Kitchen was fully equipped and the neighborhood was quiet. Would definitely book again.",
+  },
+  {
+    name: "Elena V.",
+    image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=96&h=96&fit=crop&crop=face",
+    role: "Condo · Seattle",
+    body: "The host left clear instructions and was quick to respond. Place was exactly as described and super clean.",
+  },
+  {
+    name: "David L.",
+    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=96&h=96&fit=crop&crop=face",
+    role: "Cabin · Lake Tahoe",
+    body: "Amazing weekend getaway. Cozy space with great views. Booking was seamless and check-in was a breeze.",
   },
 ];
 
 export function Testimonials() {
   return (
-    <section className="py-20 md:py-24" aria-labelledby="reviews-heading">
+    <section className="py-20" aria-labelledby="reviews-heading">
       <div className="container mx-auto max-w-[1400px]">
-        <div className="mb-12 text-center">
-          <span className="mb-2 block text-xs font-semibold uppercase tracking-widest text-primary">
-            Reviews
-          </span>
-          <h2
-            id="reviews-heading"
-            className="text-2xl font-bold tracking-tight md:text-3xl"
-          >
-            Loved by renters everywhere
-          </h2>
-          <p className="mx-auto mt-3 max-w-md text-zinc-500">
-            Don&apos;t take our word for it. Here&apos;s what real guests say.
-          </p>
-        </div>
-
-        <div className="grid gap-5 md:grid-cols-3">
+        <p className="mb-3 text-center text-xs font-medium uppercase tracking-widest text-zinc-400">
+          Reviews
+        </p>
+        <h2
+          id="reviews-heading"
+          className="mb-12 text-center text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl"
+        >
+          What guests are saying
+        </h2>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {reviews.map((r) => (
-            <Card key={r.name} className="gap-0 border-zinc-200 p-0 shadow-none transition-shadow duration-200 hover:shadow-md">
-              <CardContent className="flex flex-col gap-4 p-7">
-                <div className="flex gap-0.5">
-                  {Array.from({ length: r.rating }).map((_, i) => (
-                    <Star
-                      key={i}
-                      className="size-4 fill-primary text-primary"
-                    />
-                  ))}
+            <div key={r.name} className="flex flex-col gap-5 rounded-2xl border border-zinc-100 p-6">
+              <p className="flex-1 text-[15px] leading-relaxed text-zinc-700">
+                &ldquo;{r.body}&rdquo;
+              </p>
+              <div className="flex items-center gap-3">
+                <Avatar className="size-8 shrink-0">
+                  <AvatarImage src={r.image} alt={r.name} />
+                  <AvatarFallback className="bg-zinc-100 text-xs font-semibold text-zinc-600">
+                    {r.name.slice(0, 2)}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-sm font-semibold text-zinc-900">{r.name}</p>
+                  <p className="text-xs text-zinc-400">{r.role}</p>
                 </div>
-                <p className="leading-relaxed italic text-foreground">
-                  &ldquo;{r.body}&rdquo;
-                </p>
-                <div className="flex items-center gap-3 pt-2">
-                  <Avatar className="size-10">
-                    <AvatarImage src={r.image} alt={r.name} />
-                    <AvatarFallback className={`bg-gradient-to-br ${r.gradient} text-xs font-bold text-white`}>
-                      {r.name.slice(0, 2)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="text-sm font-semibold">{r.name}</p>
-                    <p className="text-xs text-zinc-500">{r.role}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ─── Trust & Safety ─── */
-
-const trustItems = [
-  {
-    icon: ShieldCheck,
-    title: "Protection included",
-    description:
-      "Every booking comes with property damage protection so you can stay worry-free, no extras required.",
-  },
-  {
-    icon: Headset,
-    title: "24/7 support",
-    description:
-      "Our team is always available to help with any issue, day or night, wherever you are.",
-  },
-  {
-    icon: Clock,
-    title: "Flexible cancellation",
-    description:
-      "Plans change. Cancel up to 24 hours before check-in for a full refund, no questions asked.",
-  },
-  {
-    icon: TrendingUp,
-    title: "Transparent pricing",
-    description:
-      "No hidden fees. The price you see is the price you pay, every single time.",
-  },
-];
-
-export function TrustAndSafety() {
-  return (
-    <section className="bg-zinc-50 py-20 md:py-24" aria-labelledby="trust-heading" id="contact">
-      <div className="container mx-auto max-w-[1400px]">
-        <div className="mb-12 text-center">
-          <span className="mb-2 block text-xs font-semibold uppercase tracking-widest text-primary">
-            Trust &amp; safety
-          </span>
-          <h2
-            id="trust-heading"
-            className="text-2xl font-bold tracking-tight md:text-3xl"
-          >
-            Stay with peace of mind
-          </h2>
-          <p className="mx-auto mt-3 max-w-md text-zinc-500">
-            We&apos;ve built protections into every step of the rental journey.
-          </p>
-        </div>
-
-        <div className="grid gap-5 sm:grid-cols-2">
-          {trustItems.map((item) => (
-            <div
-              key={item.title}
-              className="flex gap-4 rounded-2xl border border-zinc-200 bg-white p-7 transition-shadow duration-200 hover:shadow-md"
-            >
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <item.icon className="size-5" strokeWidth={1.75} />
-              </div>
-              <div>
-                <h3 className="font-bold">{item.title}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-zinc-500">
-                  {item.description}
-                </p>
               </div>
             </div>
           ))}
@@ -323,96 +219,67 @@ export function TrustAndSafety() {
   );
 }
 
-/* ─── Host CTA Banner ─── */
+/* ─── Host CTA — split image layout ─── */
 
 export function HostCta() {
   return (
-    <section className="py-20 md:py-24" aria-labelledby="host-heading">
+    <section className="py-20" aria-labelledby="host-heading">
       <div className="container mx-auto max-w-[1400px]">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-blue-500 to-blue-700 p-10 md:p-16">
-          <div className="pointer-events-none absolute -right-16 -top-16 size-72 rounded-full bg-white/5" />
-          <div className="pointer-events-none absolute -bottom-20 left-1/3 size-52 rounded-full bg-white/[0.03]" />
+        <div className="grid items-center gap-10 md:grid-cols-2 md:gap-16">
+          {/* Photo */}
+          <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-zinc-100">
+            <Image
+              src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=900&h=1125&fit=crop"
+              alt="Beautiful home interior"
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 50vw"
+            />
+          </div>
 
-          <div className="relative z-10 grid items-center gap-12 md:grid-cols-2">
-            <div>
-              <span className="mb-3 block text-xs font-bold uppercase tracking-widest text-white/60">
-                For property owners
-              </span>
-              <h2
-                id="host-heading"
-                className="text-2xl font-extrabold tracking-tight text-white md:text-4xl"
-              >
-                Turn your property into<br />a money maker
-              </h2>
-              <p className="mt-4 max-w-md text-base leading-relaxed text-white/80">
-                List your home in minutes and start earning. Hosts on Rento
-                earn an average of <strong className="text-white">$1,200/month</strong> with
-                flexible scheduling that fits around your life.
-              </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Button
-                  size="lg"
-                  className="bg-white font-bold text-primary shadow-lg hover:bg-white/90"
-                  asChild
-                >
-                  <Link href="/dashboard/seller">
-                    Start hosting
-                    <ArrowRight className="ml-1 size-4" />
-                  </Link>
-                </Button>
-                <Button
-                  size="lg"
-                  variant="ghost"
-                  className="border border-white/30 font-semibold text-white backdrop-blur-sm hover:bg-white/15 hover:text-white"
-                  asChild
-                >
-                  <Link href="/search">Learn more</Link>
-                </Button>
-              </div>
-            </div>
+          {/* Copy */}
+          <div>
+            <p className="mb-4 text-xs font-medium uppercase tracking-widest text-zinc-400">
+              For property owners
+            </p>
+            <h2
+              id="host-heading"
+              className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl"
+            >
+              Your home could be earning right now
+            </h2>
+            <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-zinc-500">
+              List in minutes. Hosts on Rento earn an average of{" "}
+              <span className="font-semibold text-zinc-900">$1,200/month</span> with flexible
+              scheduling that fits around your life.
+            </p>
 
-            <div className="grid grid-cols-2 gap-3.5">
+            <div className="mt-8 grid grid-cols-2 gap-6">
               {[
-                { num: "$1,200", desc: "Avg. monthly earnings per host" },
-                { num: "500+", desc: "Cities covered worldwide" },
-                { num: "2 min", desc: "To list your property" },
-                { num: "4.9", desc: "Average platform rating", suffix: <Star className="ml-0.5 inline size-4 fill-white text-white" /> },
+                { num: "$1,200", label: "Avg. monthly earnings" },
+                { num: "500+", label: "Cities covered" },
+                { num: "2 min", label: "To list your home" },
+                { num: "4.9 ★", label: "Average rating" },
               ].map((s) => (
-                <div
-                  key={s.num}
-                  className="rounded-2xl border border-white/20 bg-white/10 p-5 backdrop-blur-sm"
-                >
-                  <div className="text-2xl font-extrabold tracking-tight text-white">
-                    {s.num}{s.suffix}
-                  </div>
-                  <div className="mt-1 text-xs leading-snug text-white/70">
-                    {s.desc}
-                  </div>
+                <div key={s.num}>
+                  <p className="text-xl font-semibold tabular-nums text-zinc-900">{s.num}</p>
+                  <p className="mt-0.5 text-sm text-zinc-500">{s.label}</p>
                 </div>
               ))}
             </div>
+
+            <Button
+              className="mt-8 h-11 w-fit gap-1.5 rounded-[5px] px-4 font-semibold shadow-none"
+              asChild
+            >
+              <Link href="/dashboard/seller">
+                Start hosting
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
           </div>
         </div>
       </div>
     </section>
-  );
-}
-
-/* ─── Floating Map Button ─── */
-
-export function FloatingMapButton() {
-  return (
-    <div className="fixed bottom-7 left-1/2 z-50 -translate-x-1/2">
-      <Button
-        size="lg"
-        className="rounded-full bg-zinc-900 px-7 font-bold shadow-lg hover:bg-zinc-800"
-        asChild
-      >
-        <Link href="/search">
-          <Map className="mr-2 size-4" />
-          Show map
-        </Link>
-      </Button>
-    </div>
   );
 }

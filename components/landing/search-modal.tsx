@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import type { DateRange } from "react-day-picker";
-import { SearchIcon, CalendarIcon } from "lucide-react";
+import { SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,11 +19,22 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { DateRangePickerContent } from "@/components/landing/date-range-picker";
-import { TimePicker } from "@/components/ui/time-picker";
+import {
+  GuestPicker,
+  DEFAULT_GUESTS,
+  guestSummary,
+} from "@/components/landing/guest-picker";
+import type { Guests } from "@/components/landing/guest-picker";
 import { useSearchModal } from "@/lib/search-modal-context";
+import { cn } from "@/lib/utils";
 
-function formatDate(d: Date) {
+function formatDateShort(d: Date) {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+function formatDateRange(range: DateRange | undefined) {
+  if (!range?.from) return "";
+  if (!range.to) return formatDateShort(range.from);
+  return `${formatDateShort(range.from)} – ${formatDateShort(range.to)}`;
 }
 
 const GEO_OPTIONS = [
@@ -43,6 +54,12 @@ const GEO_OPTIONS = [
   "Santa Barbara, CA",
 ];
 
+const inputCls =
+  "min-h-11 rounded-[5px] border border-zinc-200 bg-white text-sm shadow-none placeholder:text-zinc-400 focus-visible:border-zinc-400 focus-visible:ring-0";
+
+const fieldButtonCls =
+  "flex min-h-11 w-full items-center justify-between rounded-[5px] border border-zinc-200 bg-white px-3 text-left text-sm focus-visible:outline-none focus-visible:border-zinc-400";
+
 export function SearchModal() {
   const router = useRouter();
   const { open, closeSearchModal, initialValues } = useSearchModal();
@@ -52,20 +69,18 @@ export function SearchModal() {
   const whereInputRef = useRef<HTMLInputElement>(null);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [datesOpen, setDatesOpen] = useState(false);
-  const [fromTime, setFromTime] = useState("");
-  const [untilTime, setUntilTime] = useState("");
+  const [guests, setGuests] = useState<Guests>(DEFAULT_GUESTS);
+  const [guestsOpen, setGuestsOpen] = useState(false);
 
   useEffect(() => {
     if (open && initialValues) {
       setWhereValue(initialValues.whereValue ?? "");
       setDateRange(initialValues.dateRange);
-      setFromTime(initialValues.fromTime ?? "");
-      setUntilTime(initialValues.untilTime ?? "");
+      setGuests(initialValues.guests ?? DEFAULT_GUESTS);
     } else if (open) {
       setWhereValue("");
       setDateRange(undefined);
-      setFromTime("");
-      setUntilTime("");
+      setGuests(DEFAULT_GUESTS);
     }
   }, [open, initialValues]);
 
@@ -97,42 +112,44 @@ export function SearchModal() {
 
   function isWhereFieldOrDropdown(target: EventTarget | null) {
     const el = target as HTMLElement;
-    return el?.closest?.("[data-search-where-root]") ?? el?.closest?.("[data-search-where-dropdown]") ?? false;
+    return (
+      el?.closest?.("[data-search-where-root]") ??
+      el?.closest?.("[data-search-where-dropdown]") ??
+      false
+    );
   }
+
+  const dateSummary = formatDateRange(dateRange);
+  const guestText = guestSummary(guests);
 
   return (
     <Sheet open={open} onOpenChange={(o) => !o && closeSearchModal()}>
       <SheetContent
         side="bottom"
-        className="flex max-h-[88vh] flex-col rounded-t-2xl border-t p-0"
+        className="flex max-h-[92vh] flex-col rounded-t-2xl border-t border-zinc-100 p-0"
         showCloseButton
         onOpenAutoFocus={(e) => e.preventDefault()}
         onInteractOutside={(e) => {
           if (isWhereFieldOrDropdown(e.target)) e.preventDefault();
         }}
       >
-        <SheetHeader className="border-b px-4 py-2 text-left">
-          <SheetTitle className="text-lg">Search homes</SheetTitle>
+        <SheetHeader className="border-b border-zinc-100 px-4 py-3 text-left">
+          <SheetTitle className="text-base font-semibold">Search homes</SheetTitle>
         </SheetHeader>
+
         <form
           id="search-modal-form"
           onSubmit={handleSubmit}
           className="flex flex-1 flex-col overflow-auto"
           aria-label="Search homes"
         >
-          <div className="flex flex-1 flex-col gap-4 p-4 pt-3">
+          <div className="flex flex-1 flex-col gap-4 p-4 pt-4">
+            {/* Where */}
             <div className="space-y-1.5" data-search-where-root>
-              <Label
-                htmlFor="search-where"
-                className="text-xs font-medium text-zinc-600"
-              >
+              <Label htmlFor="search-where" className="text-xs font-semibold text-zinc-900">
                 Where
               </Label>
-              <Popover
-                open={whereOpen}
-                onOpenChange={setWhereOpen}
-                modal={false}
-              >
+              <Popover open={whereOpen} onOpenChange={setWhereOpen} modal={false}>
                 <PopoverAnchor asChild>
                   <Input
                     ref={whereInputRef}
@@ -140,12 +157,11 @@ export function SearchModal() {
                     name="where"
                     type="text"
                     autoComplete="off"
-                    placeholder="City, neighborhood, or address"
+                    placeholder="Search destinations"
                     value={whereValue}
                     onChange={(e) => setWhereValue(e.target.value)}
                     onFocus={() => setWhereOpen(true)}
-                    onBlur={() => {}}
-                    className="min-h-10 border border-zinc-200 bg-white text-sm shadow-none focus-visible:border-primary focus-visible:ring-0"
+                    className={inputCls}
                     aria-label="Where to stay"
                     aria-expanded={whereOpen}
                     autoFocus={false}
@@ -159,14 +175,13 @@ export function SearchModal() {
                   className="z-[100] w-[var(--radix-popover-trigger-width)] min-w-[280px] max-w-[360px] p-0"
                   onOpenAutoFocus={(e) => e.preventDefault()}
                   onInteractOutside={(e) => {
-                    if (whereInputRef.current?.contains(e.target as Node)) e.preventDefault();
+                    if (whereInputRef.current?.contains(e.target as Node))
+                      e.preventDefault();
                   }}
                 >
                   <ul className="max-h-[280px] overflow-auto py-1">
                     {filteredPlaces.length === 0 ? (
-                      <li className="px-3 py-2 text-sm text-zinc-500">
-                        No results
-                      </li>
+                      <li className="px-3 py-2 text-sm text-zinc-500">No results</li>
                     ) : (
                       filteredPlaces.map((place) => (
                         <li key={place}>
@@ -190,89 +205,70 @@ export function SearchModal() {
               </Popover>
             </div>
 
-            <Popover open={datesOpen} onOpenChange={setDatesOpen} modal={false}>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-zinc-600">
-                    Check in
-                  </Label>
-                  <PopoverAnchor asChild>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setDatesOpen(true)}
-                        className="flex min-h-10 min-w-0 flex-1 items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 text-left text-sm text-zinc-700 focus-visible:border-primary focus-visible:outline-none focus-visible:ring-0"
-                      >
-                        <CalendarIcon className="size-4 shrink-0 text-zinc-500" />
-                        <span className="truncate">
-                          {dateRange?.from
-                            ? formatDate(dateRange.from)
-                            : "Add dates"}
-                        </span>
-                      </button>
-                      <TimePicker
-                        id="search-from-time"
-                        name="fromTime"
-                        value={fromTime}
-                        onChange={setFromTime}
-                        placeholder="Time"
-                        triggerClassName="min-h-10 w-full min-w-0 rounded-lg border border-zinc-200 px-3 text-sm justify-start shadow-none focus-visible:border-primary focus-visible:ring-0"
-                      />
-                    </div>
-                  </PopoverAnchor>
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-zinc-600">
-                    Check out
-                  </Label>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setDatesOpen(true)}
-                      className="flex min-h-10 min-w-0 flex-1 items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 text-left text-sm text-zinc-700 focus-visible:border-primary focus-visible:outline-none focus-visible:ring-0"
-                    >
-                      <CalendarIcon className="size-4 shrink-0 text-zinc-500" />
-                      <span className="truncate">
-                        {dateRange?.to
-                          ? formatDate(dateRange.to)
-                          : "Add dates"}
-                      </span>
-                    </button>
-                    <TimePicker
-                      id="search-until-time"
-                      name="untilTime"
-                      value={untilTime}
-                      onChange={setUntilTime}
-                      placeholder="Time"
-                      triggerClassName="min-h-10 w-full min-w-0 rounded-lg border border-zinc-200 px-3 text-sm justify-start shadow-none focus-visible:border-primary focus-visible:ring-0"
-                    />
-                  </div>
-                </div>
-              </div>
-              <PopoverContent
-                className="z-[100] min-w-[min(360px,100vw-2rem)] max-w-full p-0 sm:min-w-[400px]"
-                align="start"
-                sideOffset={8}
-                onOpenAutoFocus={(e) => e.preventDefault()}
-                onCloseAutoFocus={(e) => e.preventDefault()}
-              >
-                <DateRangePickerContent
-                  value={dateRange}
-                  onChange={(range) => setDateRange(range)}
-                  onClose={() => setDatesOpen(false)}
-                  fullWidth
-                  compact
-                />
-              </PopoverContent>
-            </Popover>
+            {/* When */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-zinc-900">When</Label>
+              <Popover open={datesOpen} onOpenChange={setDatesOpen} modal={false}>
+                <PopoverAnchor asChild>
+                  <button
+                    type="button"
+                    onClick={() => setDatesOpen(true)}
+                    className={cn(fieldButtonCls, dateSummary ? "text-zinc-900" : "text-zinc-400")}
+                    aria-label="Select dates"
+                  >
+                    {dateSummary || "Add dates"}
+                  </button>
+                </PopoverAnchor>
+                <PopoverContent
+                  className="z-[100] min-w-[min(360px,100vw-2rem)] max-w-full p-0 sm:min-w-[400px]"
+                  align="start"
+                  sideOffset={8}
+                  onOpenAutoFocus={(e) => e.preventDefault()}
+                  onCloseAutoFocus={(e) => e.preventDefault()}
+                >
+                  <DateRangePickerContent
+                    value={dateRange}
+                    onChange={setDateRange}
+                    onClose={() => setDatesOpen(false)}
+                    fullWidth
+                    compact
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            {/* Who */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-zinc-900">Who</Label>
+              <Popover open={guestsOpen} onOpenChange={setGuestsOpen} modal={false}>
+                <PopoverAnchor asChild>
+                  <button
+                    type="button"
+                    onClick={() => setGuestsOpen(true)}
+                    className={cn(fieldButtonCls, guestText ? "text-zinc-900" : "text-zinc-400")}
+                    aria-label="Add guests"
+                  >
+                    {guestText || "Add guests"}
+                  </button>
+                </PopoverAnchor>
+                <PopoverContent
+                  className="z-[100] w-[var(--radix-popover-trigger-width)] p-0"
+                  align="start"
+                  sideOffset={8}
+                  onOpenAutoFocus={(e) => e.preventDefault()}
+                >
+                  <GuestPicker value={guests} onChange={setGuests} />
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
 
-          <div className="border-t p-4">
+          <div className="border-t border-zinc-100 p-4">
             <Button
               type="submit"
-              className="min-h-11 w-full rounded-xl bg-[#156EF5] text-sm font-medium hover:bg-[#125bd4]"
+              className="min-h-11 w-full rounded-[5px] bg-[#156EF5] text-sm font-medium hover:bg-[#125bd4]"
             >
-              <SearchIcon className="size-5 text-white" aria-hidden />
+              <SearchIcon className="size-4 text-white" aria-hidden />
               Search
             </Button>
           </div>

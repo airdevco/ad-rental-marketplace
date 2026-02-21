@@ -6,9 +6,7 @@ import {
   HowItWorks,
   PopularDestinations,
   Testimonials,
-  TrustAndSafety,
   HostCta,
-  FloatingMapButton,
 } from "@/components/landing/marketing-blocks";
 
 export default function Home() {
@@ -16,24 +14,18 @@ export default function Home() {
     <div className="min-h-screen w-full">
       <HeroWithScrollPadding aria-labelledby="hero-heading">
         <div className="container mx-auto w-full max-w-[1400px]">
-          <div className="relative w-full overflow-hidden rounded-3xl pb-16 pt-14 md:pb-20 md:pt-18">
+          <div className="relative w-full pb-14 pt-12 md:pb-18 md:pt-16">
             <div className="relative text-center">
-              <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-4 py-1.5 text-sm font-medium text-zinc-500">
-                <span className="size-1.5 shrink-0 rounded-full bg-emerald-500" />
-                Skip the hotel lobby — 500+ cities worldwide
-              </div>
               <h1
                 id="hero-heading"
-                className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl md:text-6xl"
+                className="text-5xl font-semibold tracking-tight text-zinc-900 sm:text-6xl md:text-7xl"
               >
-                Find your perfect<br />
-                <span className="text-primary">home</span>
+                Stay somewhere real
               </h1>
-              <p className="mx-auto mt-5 max-w-lg text-base leading-relaxed text-muted-foreground md:text-lg">
-                Rent homes from local hosts. No queues, no hassle — just great
-                places at honest prices.
+              <p className="mx-auto mt-4 max-w-sm text-[15px] leading-relaxed text-zinc-500 md:text-base">
+                Rent from local hosts. Simple booking, real homes.
               </p>
-              <div className="mt-10 flex flex-col items-center">
+              <div className="mt-9 flex flex-col items-center">
                 <HeroSearch />
               </div>
             </div>
@@ -47,12 +39,10 @@ export default function Home() {
         </Suspense>
       </div>
 
-      <HowItWorks />
       <PopularDestinations />
+      <HowItWorks />
       <Testimonials />
-      <TrustAndSafety />
       <HostCta />
-      <FloatingMapButton />
     </div>
   );
 }

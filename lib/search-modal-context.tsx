@@ -8,12 +8,12 @@ import {
   useMemo,
 } from "react";
 import type { DateRange } from "react-day-picker";
+import type { Guests } from "@/components/landing/guest-picker";
 
 export type SearchModalInitialValues = {
   whereValue?: string;
   dateRange?: DateRange;
-  fromTime?: string;
-  untilTime?: string;
+  guests?: Guests;
 };
 
 type SearchModalContextValue = {

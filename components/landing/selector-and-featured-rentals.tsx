@@ -2,74 +2,73 @@
 
 import Link from "next/link";
 import { useQueryState, parseAsStringLiteral } from "nuqs";
-import { SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { VehicleTypeSelector, VEHICLE_TITLE_MAP } from "@/components/landing/vehicle-type-selector";
+import { VehicleTypeSelector } from "@/components/landing/vehicle-type-selector";
 import { VehicleListingCard } from "@/components/landing/vehicle-listing-card";
 import { getListingsByCategory } from "@/lib/vehicle-listings";
 import type { VehicleCategory } from "@/lib/vehicle-listings";
 
-const CATEGORY_OPTIONS = ["all", "economy", "suvs", "passenger-vans", "pickup-truck", "premium", "luxury"] as const;
+/** URL-friendly slugs for property type (homepage only); internal data still uses VehicleCategory. */
+const TYPE_SLUGS = ["all", "apartments", "houses", "condos", "cabins", "beachfront", "luxury"] as const;
+type TypeSlug = (typeof TYPE_SLUGS)[number];
 
-const FILTER_CHIPS = [
-  "Under $150/night",
-  "Self check-in",
-  "Instant book",
-  "Top rated",
-  "Pet friendly",
-  "Pool",
-];
+const SLUG_TO_CATEGORY: Record<TypeSlug, VehicleCategory> = {
+  all: "all",
+  apartments: "economy",
+  houses: "suvs",
+  condos: "passenger-vans",
+  cabins: "pickup-truck",
+  beachfront: "premium",
+  luxury: "luxury",
+};
+
+const CATEGORY_TO_SLUG: Record<VehicleCategory, TypeSlug> = {
+  all: "all",
+  economy: "apartments",
+  suvs: "houses",
+  "passenger-vans": "condos",
+  "pickup-truck": "cabins",
+  premium: "beachfront",
+  luxury: "luxury",
+};
 
 export function SelectorAndFeaturedRentals() {
-  const [selectedVehicle, setCategoryParam] = useQueryState(
-    "category",
-    parseAsStringLiteral(CATEGORY_OPTIONS).withDefault("all")
+  const [typeSlug, setTypeSlug] = useQueryState(
+    "type",
+    parseAsStringLiteral(TYPE_SLUGS).withDefault("all")
   );
-  const title = VEHICLE_TITLE_MAP[selectedVehicle] ?? "All homes";
-  const allListings = getListingsByCategory(selectedVehicle);
+  const selectedCategory = SLUG_TO_CATEGORY[typeSlug];
+  const allListings = getListingsByCategory(selectedCategory);
   const listings = allListings.slice(0, 20);
 
+  function handleTypeChange(id: string) {
+    setTypeSlug(CATEGORY_TO_SLUG[id as VehicleCategory]);
+  }
+
   return (
-    <div className="space-y-0">
-      <div className="flex justify-center pt-10">
-        <VehicleTypeSelector value={selectedVehicle} onChange={(id) => setCategoryParam(id as VehicleCategory)} />
+    <div>
+      {/* Full-bleed tab bar — border-b must be the containing border so -mb-px on tabs aligns */}
+      <div className="relative left-1/2 w-screen -ml-[50vw] border-b border-zinc-100">
+        <div className="container mx-auto max-w-[1400px] pt-5">
+          <VehicleTypeSelector value={selectedCategory} onChange={handleTypeChange} />
+        </div>
       </div>
-      <section className="w-full pt-1 pb-16 md:pt-1.5 md:pb-20" aria-labelledby="featured-heading">
-        <div className="w-full">
-          <div className="flex items-end justify-between gap-4">
-            <h2 id="featured-heading" className="text-2xl font-bold tracking-tight md:text-3xl">
-              {title}
-            </h2>
-            <Link href="/search" className="hidden text-sm font-semibold underline md:inline">
-              Show all
-            </Link>
-          </div>
 
-          <div className="mt-4 flex flex-wrap items-center gap-2.5">
-            <button className="inline-flex items-center gap-1.5 rounded-full border border-zinc-900 bg-zinc-900 px-4 py-2 text-sm font-medium text-white">
-              <SlidersHorizontal className="size-3.5" />
-              Filters
-            </button>
-            {FILTER_CHIPS.map((chip) => (
-              <button
-                key={chip}
-                className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 transition-colors hover:border-zinc-900"
-              >
-                {chip}
-              </button>
-            ))}
-          </div>
-
-          <div className="mt-6 grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
-            {listings.map((listing) => (
-              <VehicleListingCard key={listing.id} listing={listing} />
-            ))}
-          </div>
-          <div className="mt-8 text-center">
-            <Button variant="outline" asChild>
-              <Link href="/search">View all homes</Link>
-            </Button>
-          </div>
+      <section className="w-full pb-16 pt-6 md:pb-20" aria-labelledby="featured-heading">
+        <h2 id="featured-heading" className="sr-only">Available homes</h2>
+        <div className="grid gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+          {listings.map((listing) => (
+            <VehicleListingCard key={listing.id} listing={listing} />
+          ))}
+        </div>
+        <div className="mt-10 text-center">
+          <Button
+            variant="outline"
+            className="h-11 w-fit rounded-[5px] px-4 font-semibold text-zinc-700 shadow-none hover:bg-zinc-100"
+            asChild
+          >
+            <Link href="/search">View all homes</Link>
+          </Button>
         </div>
       </section>
     </div>
