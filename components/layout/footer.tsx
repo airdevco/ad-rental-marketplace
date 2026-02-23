@@ -13,7 +13,7 @@ const socialLinks = [
 
 export function Footer() {
   const pathname = usePathname();
-  if (pathname === "/messages") return null;
+  if (pathname === "/messages" || pathname === "/search") return null;
 
   const isSearchPage = pathname === "/search";
 
@@ -21,7 +21,7 @@ export function Footer() {
     <footer className="border-t border-zinc-100 bg-white">
       <div
         className={cn(
-          "flex w-full flex-col items-start justify-between gap-5 py-7 sm:flex-row sm:items-center sm:gap-4",
+          "flex w-full flex-row items-center justify-between gap-4 py-4",
           isSearchPage ? "px-4 sm:px-6" : "container max-w-[1400px]"
         )}
       >
@@ -48,8 +48,8 @@ export function Footer() {
           </Link>
         </div>
 
-        {/* Right: social icons */}
-        <nav aria-label="Social media" className="flex items-center gap-4">
+        {/* Right: social icons — hidden on mobile to keep single-line layout */}
+        <nav aria-label="Social media" className="hidden sm:flex items-center gap-4">
           {socialLinks.map(({ label, href, Icon }) => (
             <Link
               key={href}

@@ -28,8 +28,8 @@ const steps = [
 export function HowItWorks() {
   return (
     <section className="py-20" aria-labelledby="how-heading">
-      <div className="container mx-auto max-w-[1400px]">
-        <p className="mb-3 text-center text-xs font-medium uppercase tracking-widest text-zinc-400">
+      <div className="container mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+        <p className="mb-3 text-center text-xs font-medium uppercase tracking-widest text-muted-foreground">
           How it works
         </p>
         <h2 id="how-heading" className="mb-12 text-center text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl">
@@ -40,9 +40,9 @@ export function HowItWorks() {
             const Icon = s.icon;
             return (
               <div key={s.title} className="flex flex-col items-center text-center">
-                <Icon className="size-10 shrink-0 text-zinc-400 sm:size-12" strokeWidth={1.5} aria-hidden />
+                <Icon className="size-10 shrink-0 text-muted-foreground sm:size-12" strokeWidth={1.5} aria-hidden />
                 <h3 className="mt-5 text-lg font-semibold text-zinc-900 sm:text-xl">{s.title}</h3>
-                <p className="mt-2 max-w-[260px] text-[15px] leading-relaxed text-zinc-500">{s.description}</p>
+                <p className="mt-2 max-w-[260px] text-[15px] leading-relaxed text-muted-foreground">{s.description}</p>
               </div>
             );
           })}
@@ -84,7 +84,7 @@ const destinations = [
 export function PopularDestinations() {
   return (
     <section className="py-20" aria-labelledby="dest-heading">
-      <div className="container mx-auto max-w-[1400px]">
+      <div className="container mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
         <div className="mb-10 flex items-center gap-3">
           <h2 id="dest-heading" className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl">
             Popular destinations
@@ -183,8 +183,8 @@ const reviews = [
 export function Testimonials() {
   return (
     <section className="py-20" aria-labelledby="reviews-heading">
-      <div className="container mx-auto max-w-[1400px]">
-        <p className="mb-3 text-center text-xs font-medium uppercase tracking-widest text-zinc-400">
+      <div className="container mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+        <p className="mb-3 text-center text-xs font-medium uppercase tracking-widest text-muted-foreground">
           Reviews
         </p>
         <h2
@@ -196,7 +196,7 @@ export function Testimonials() {
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {reviews.map((r) => (
             <div key={r.name} className="flex flex-col gap-5 rounded-2xl border border-zinc-100 p-6">
-              <p className="flex-1 text-[15px] leading-relaxed text-zinc-700">
+              <p className="flex-1 text-[15px] leading-relaxed text-muted-foreground">
                 &ldquo;{r.body}&rdquo;
               </p>
               <div className="flex items-center gap-3">
@@ -208,7 +208,7 @@ export function Testimonials() {
                 </Avatar>
                 <div>
                   <p className="text-sm font-semibold text-zinc-900">{r.name}</p>
-                  <p className="text-xs text-zinc-400">{r.role}</p>
+                  <p className="text-xs text-muted-foreground">{r.role}</p>
                 </div>
               </div>
             </div>
@@ -224,7 +224,7 @@ export function Testimonials() {
 export function HostCta() {
   return (
     <section className="py-20" aria-labelledby="host-heading">
-      <div className="container mx-auto max-w-[1400px]">
+      <div className="container mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
         <div className="grid items-center gap-10 md:grid-cols-2 md:gap-16">
           {/* Photo */}
           <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-zinc-100">
@@ -239,7 +239,7 @@ export function HostCta() {
 
           {/* Copy */}
           <div>
-            <p className="mb-4 text-xs font-medium uppercase tracking-widest text-zinc-400">
+            <p className="mb-4 text-xs font-medium uppercase tracking-widest text-muted-foreground">
               For property owners
             </p>
             <h2
@@ -248,7 +248,7 @@ export function HostCta() {
             >
               Your home could be earning right now
             </h2>
-            <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-zinc-500">
+            <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-muted-foreground">
               List in minutes. Hosts on Rento earn an average of{" "}
               <span className="font-semibold text-zinc-900">$1,200/month</span> with flexible
               scheduling that fits around your life.
@@ -263,7 +263,7 @@ export function HostCta() {
               ].map((s) => (
                 <div key={s.num}>
                   <p className="text-xl font-semibold tabular-nums text-zinc-900">{s.num}</p>
-                  <p className="mt-0.5 text-sm text-zinc-500">{s.label}</p>
+                  <p className="mt-0.5 text-sm text-muted-foreground">{s.label}</p>
                 </div>
               ))}
             </div>

@@ -100,11 +100,11 @@ export function VehicleTypeSelector({
 
   return (
     <div
-      className="flex w-full items-end justify-center overflow-x-auto overflow-y-hidden -mx-4 px-4 md:mx-0 md:px-0"
+      className="flex min-w-0 w-full items-end overflow-x-auto overflow-y-hidden md:justify-center"
       role="tablist"
       aria-label="Property type"
     >
-      <div className="relative flex items-end justify-center">
+      <div className="relative flex shrink-0 items-end justify-start md:justify-center min-w-max">
         {OPTIONS.map(({ id, label, icon: Icon }) => {
           const isSelected = selected === id;
           return (

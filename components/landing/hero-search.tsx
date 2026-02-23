@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -54,22 +54,9 @@ export function HeroSearch() {
   const [whereOpen, setWhereOpen] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [datesOpen, setDatesOpen] = useState(false);
-  const [datesSectionWidth, setDatesSectionWidth] = useState(0);
-  const datesSectionRef = useRef<HTMLDivElement>(null);
   const [guests, setGuests] = useState<Guests>(DEFAULT_GUESTS);
   const [guestsOpen, setGuestsOpen] = useState(false);
   const { openSearchModal } = useSearchModal();
-
-  useEffect(() => {
-    if (!datesOpen || !datesSectionRef.current) return;
-    const el = datesSectionRef.current;
-    setDatesSectionWidth(el.getBoundingClientRect().width);
-    const ro = new ResizeObserver(() =>
-      setDatesSectionWidth(el.getBoundingClientRect().width)
-    );
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [datesOpen]);
 
   const filteredPlaces = whereValue.trim()
     ? GEO_OPTIONS.filter((p) =>
@@ -200,29 +187,26 @@ export function HeroSearch() {
           <div className="h-9 w-px bg-zinc-300/50" />
         </div>
 
-        {/* When */}
+        {/* When - min-width so date range doesn't overflow */}
         <Popover open={datesOpen} onOpenChange={setDatesOpen}>
           <PopoverAnchor asChild>
-            <div
-              ref={datesSectionRef}
-              className="flex min-h-10 flex-1 flex-col justify-center gap-0.5 text-left sm:min-w-0 sm:px-5 sm:py-2.5 md:min-h-full"
-            >
+            <div className="flex min-h-10 flex-1 flex-col justify-center gap-0.5 text-left sm:min-w-[200px] sm:px-5 sm:py-2.5 md:min-h-full">
               <span className={fieldLabel}>When</span>
               <button
                 type="button"
                 onClick={() => setDatesOpen(true)}
-                className={cn(fieldValue, dateSummary ? "text-zinc-900" : "text-zinc-400")}
+                className={cn(fieldValue, "min-w-0 overflow-hidden", dateSummary ? "text-zinc-900" : "text-zinc-400")}
                 aria-label="Select dates"
               >
-                {dateSummary || "Add dates"}
+                <span className="block truncate">{dateSummary || "Add dates"}</span>
               </button>
             </div>
           </PopoverAnchor>
           <PopoverContent
-            className="hidden p-0 lg:block"
+            className="hidden w-auto p-0 lg:block"
             align="start"
             sideOffset={8}
-            style={{ width: datesSectionWidth > 0 ? datesSectionWidth : 360 }}
+            onOpenAutoFocus={(e) => e.preventDefault()}
           >
             <DateRangePickerContent
               value={dateRange}

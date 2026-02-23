@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { Star } from "@phosphor-icons/react";
-import { Heart, Users, Briefcase, DoorClosed } from "lucide-react";
+import { Heart } from "lucide-react";
 import type { VehicleListing } from "@/lib/vehicle-listings";
 import {
   getDummyRating,
@@ -19,6 +19,10 @@ export function MapViewListingCard({ listing }: { listing: VehicleListing }) {
   const images = getListingGalleryImages(listing);
   const firstImage = images[0] ?? "";
 
+  const bedrooms = listing.seats;
+  const bathrooms = listing.luggage;
+  const guests = listing.doors;
+
   function handleWishlistClick(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
@@ -30,7 +34,7 @@ export function MapViewListingCard({ listing }: { listing: VehicleListing }) {
       href={`/listing/${listing.id}`}
       className="block w-full text-left group/card"
     >
-      <Card className="relative flex flex-row overflow-hidden border-zinc-200 bg-white p-0 shadow-sm">
+      <Card className="relative flex flex-row overflow-hidden border-zinc-100 bg-white p-0 shadow-none">
         {/* Left: image ~40% - zoom on card hover; heart inside image */}
         <div className="relative h-32 w-[45%] shrink-0 overflow-hidden sm:h-36">
           <Image
@@ -58,45 +62,32 @@ export function MapViewListingCard({ listing }: { listing: VehicleListing }) {
           </button>
         </div>
 
-        {/* Right: details - match grid view (title, rating, seats/luggage/doors, price) */}
+        {/* Right: details */}
         <div className="flex min-w-0 flex-1 flex-col justify-between px-3 py-3 sm:px-4 sm:py-4">
           <div>
-            <div className="flex items-center justify-between gap-2">
-              <h3 className="min-w-0 flex-1 truncate text-lg font-bold text-zinc-900">
+            <div className="flex items-start justify-between gap-2">
+              <h3 className="min-w-0 flex-1 truncate text-sm font-semibold text-zinc-900">
                 {listing.title}
               </h3>
               <span
-                className="flex shrink-0 items-center gap-1"
+                className="flex shrink-0 items-center gap-1 pt-px"
                 aria-label={`Rating: ${rating} out of 5`}
               >
-                <Star size={16} weight="fill" className="text-amber-400 shrink-0" aria-hidden />
-                <span className="text-sm font-medium tabular-nums text-zinc-700">
+                <Star size={12} weight="fill" className="text-zinc-900 shrink-0" aria-hidden />
+                <span className="text-sm tabular-nums text-zinc-900">
                   {rating.toFixed(2)}
                 </span>
               </span>
             </div>
-            {/* Features - Users, Briefcase, Door icons (same as grid) */}
-            <div className="mt-1 flex items-center gap-4 text-sm font-medium text-zinc-900">
-              <span className="flex items-center gap-1.5" aria-label={`${listing.seats} seats`}>
-                <Users className="size-4 shrink-0" aria-hidden />
-                {listing.seats}
-              </span>
-              <span className="flex items-center gap-1.5" aria-label={`${listing.luggage} luggage`}>
-                <Briefcase className="size-4 shrink-0" aria-hidden />
-                {listing.luggage}
-              </span>
-              <span className="flex items-center gap-1.5" aria-label={`${listing.doors} doors`}>
-                <DoorClosed className="size-4 shrink-0" aria-hidden />
-                {listing.doors}
-              </span>
-            </div>
+            <p className="mt-0.5 text-sm text-muted-foreground">{listing.subtitle}</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {bedrooms} bed{bedrooms !== 1 ? "s" : ""} · {bathrooms} bath{bathrooms !== 1 ? "s" : ""} · {guests} guest{guests !== 1 ? "s" : ""}
+            </p>
           </div>
-          <div className="mt-1">
-            <span className="text-xl font-bold tabular-nums text-zinc-900">
-              ${listing.pricePerDay}
-            </span>
-            <span className="ml-0.5 text-sm text-zinc-500">/day</span>
-          </div>
+          <p className="mt-1.5 text-sm text-zinc-900">
+            <span className="font-semibold">${listing.pricePerDay}</span>
+            <span className="text-muted-foreground"> / night</span>
+          </p>
         </div>
       </Card>
     </Link>

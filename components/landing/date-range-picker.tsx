@@ -84,14 +84,27 @@ export function DateRangePickerContent({
         >
           Reset
         </Button>
-        <Button
-          type="button"
-          size="sm"
-          onClick={onClose}
-          className="bg-[#156EF5] hover:bg-[#125bd4]"
-        >
-          Save
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              onChange(undefined);
+            }}
+            className="text-zinc-600"
+          >
+            Clear dates
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            onClick={onClose}
+            className="bg-[#156EF5] hover:bg-[#125bd4]"
+          >
+            Save
+          </Button>
+        </div>
       </div>
     </div>
   );

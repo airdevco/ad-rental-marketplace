@@ -1,7 +1,7 @@
 "use client";
 
 import { createParser, useQueryState } from "nuqs";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { LayoutGrid, Map, FilterIcon } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -25,30 +25,13 @@ const PRICE_OPTIONS = [
   { value: "250+", label: "$250+" },
 ] as const;
 
-const SEATS_OPTIONS = [
-  { value: "", label: "Seats" },
+const BEDROOMS_OPTIONS = [
+  { value: "1", label: "1+" },
   { value: "2", label: "2+" },
+  { value: "3", label: "3+" },
   { value: "4", label: "4+" },
   { value: "5", label: "5+" },
-  { value: "7", label: "7+" },
-  { value: "10", label: "10+" },
 ] as const;
-
-const FUEL_OPTIONS = [
-  { value: "", label: "Fuel type" },
-  { value: "gas", label: "Gas" },
-  { value: "electric", label: "Electric" },
-  { value: "hybrid", label: "Hybrid" },
-] as const;
-
-function isElectric(title: string): boolean {
-  const t = title.toLowerCase();
-  return t.includes("tesla") || t.includes("electric") || t.includes("ev");
-}
-
-function isHybrid(title: string): boolean {
-  return title.toLowerCase().includes("hybrid");
-}
 
 type ListingFilterShape = {
   id: string;
@@ -65,21 +48,12 @@ export function getFilteredListings<T extends ListingFilterShape>(
     minPrice?: string;
     maxPrice?: string;
     seatsMin?: string;
-    fuelType?: string;
     categories?: VehicleCategory[];
     sort?: string;
   }
 ): T[] {
   let result = [...listings] as T[];
-  const {
-    priceRange,
-    minPrice,
-    maxPrice,
-    seatsMin,
-    fuelType,
-    categories,
-    sort,
-  } = opts;
+  const { priceRange, minPrice, maxPrice, seatsMin, categories, sort } = opts;
 
   // Category filter (multiselect)
   if (categories && categories.length > 0) {
@@ -105,18 +79,11 @@ export function getFilteredListings<T extends ListingFilterShape>(
       result = result.filter((l) => l.pricePerDay <= max);
   }
 
+  // Bedrooms filter (uses seats field)
   if (seatsMin) {
     const min = Number(seatsMin);
     if (!Number.isNaN(min))
       result = result.filter((l) => l.seats >= min);
-  }
-
-  if (fuelType === "electric") {
-    result = result.filter((l) => isElectric(l.title));
-  } else if (fuelType === "hybrid") {
-    result = result.filter((l) => isHybrid(l.title));
-  } else if (fuelType === "gas") {
-    result = result.filter((l) => !isElectric(l.title) && !isHybrid(l.title));
   }
 
   // Sort
@@ -144,7 +111,6 @@ export function SearchFilterBar() {
   }).withDefault("");
   const [priceRange, setPriceRange] = useQueryState("price", stringParser);
   const [seatsMin, setSeatsMin] = useQueryState("seats", stringParser);
-  const [fuelType, setFuelType] = useQueryState("fuel", stringParser);
   const [categories, setCategories] = useQueryState("categories", stringParser);
   const [minPrice, setMinPrice] = useQueryState("minPrice", stringParser);
   const [maxPrice, setMaxPrice] = useQueryState("maxPrice", stringParser);
@@ -163,6 +129,8 @@ export function SearchFilterBar() {
   const [freeCancellation, setFreeCancellation] = useQueryState("freeCancellation", boolParamParser);
 
   const [scrolled, setScrolled] = useState(false);
+  const [filterBarVisible, setFilterBarVisible] = useState(true);
+  const lastScrollY = useRef(0);
   const [allFiltersOpen, setAllFiltersOpen] = useState(false);
 
   const filterValues = {
@@ -173,7 +141,7 @@ export function SearchFilterBar() {
       ? (categories.split(",").filter(Boolean) as VehicleCategory[])
       : [],
     seats: seatsMin,
-    fuel: fuelType,
+    fuel: "",
     instantBook: instantBook === "true",
     freeCancellation: freeCancellation === "true",
   };
@@ -184,111 +152,114 @@ export function SearchFilterBar() {
     setMaxPrice(v.maxPrice);
     setCategories(v.categories.length ? v.categories.join(",") : null);
     setSeatsMin(v.seats || null);
-    setFuelType(v.fuel || null);
     setInstantBook(v.instantBook ? "true" : null);
     setFreeCancellation(v.freeCancellation ? "true" : null);
     setPriceRange(null);
   }
 
   useEffect(() => {
+    const HIDE_SCROLL_DELTA = 30;
+    const TOP_THRESHOLD = 60;
+
     function onScroll() {
-      setScrolled(window.scrollY > 0);
+      const y = window.scrollY;
+      setScrolled(y > 0);
+      const prev = lastScrollY.current;
+      const delta = y - prev;
+
+      if (y <= TOP_THRESHOLD) {
+        setFilterBarVisible(true);
+      } else if (delta > HIDE_SCROLL_DELTA) {
+        setFilterBarVisible(false);
+      } else if (delta < 0) {
+        setFilterBarVisible(true);
+      }
+      lastScrollY.current = y;
     }
+
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   return (
-    <div className={cn("sticky top-16 z-40 flex w-full shrink-0 items-center gap-4 border-b border-zinc-200 bg-white px-4 py-2.5 sm:px-6", scrolled && "border-t border-zinc-200")}>
+    <div
+      className={cn(
+        "fixed top-16 left-0 right-0 z-40 transition-transform duration-300 ease-out",
+        !filterBarVisible && "-translate-y-full"
+      )}
+    >
+      <div className={cn("flex w-full items-center gap-4 border-b border-zinc-100 bg-white px-4 py-2.5 sm:px-6", scrolled && "border-t border-zinc-100")}>
       <div className="flex min-w-0 flex-1 overflow-x-auto overflow-y-hidden">
         <div className="flex shrink-0 items-center gap-2">
-        {/* All filters - opens sheet */}
-        <AllFiltersSheet
-          open={allFiltersOpen}
-          onOpenChange={setAllFiltersOpen}
-          values={filterValues}
-          onApply={handleApplyFilters}
-        >
-          <Button
-            variant="outline"
-            className="h-9 shrink-0 rounded-lg gap-2 px-3"
-            aria-label="All filters"
+          {/* All filters - opens sheet */}
+          <AllFiltersSheet
+            open={allFiltersOpen}
+            onOpenChange={setAllFiltersOpen}
+            values={filterValues}
+            onApply={handleApplyFilters}
           >
-            <FilterIcon className="size-4" aria-hidden />
-            All filters
-          </Button>
-        </AllFiltersSheet>
+            <Button
+              variant="outline"
+              className="h-9 shrink-0 rounded-[5px] gap-2 px-3 border-zinc-200"
+              aria-label="All filters"
+            >
+              <FilterIcon className="size-4" aria-hidden />
+              All filters
+            </Button>
+          </AllFiltersSheet>
 
-        {/* Price dropdown */}
-        <Select
-          value={priceRange || "__any__"}
-          onValueChange={(v) => {
-            if (v === "__any__") {
-              setPriceRange(null);
-              setMinPrice(null);
-              setMaxPrice(null);
-              return;
-            }
-            setPriceRange(v);
-            const [lo, hi] = v.split("-").map(Number);
-            if (v === "250+") {
-              setMinPrice("250");
-              setMaxPrice(null);
-            } else if (!Number.isNaN(lo) && !Number.isNaN(hi)) {
-              setMinPrice(String(lo));
-              setMaxPrice(String(hi));
-            }
-          }}
-        >
-          <SelectTrigger className="h-9 w-[130px] shrink-0 rounded-lg border-zinc-200">
-            <SelectValue placeholder="Price" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__any__">Price</SelectItem>
-            {PRICE_OPTIONS.filter((o) => o.value).map((o) => (
-              <SelectItem key={o.value} value={o.value}>
-                {o.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          {/* Price dropdown */}
+          <Select
+            value={priceRange || "__any__"}
+            onValueChange={(v) => {
+              if (v === "__any__") {
+                setPriceRange(null);
+                setMinPrice(null);
+                setMaxPrice(null);
+                return;
+              }
+              setPriceRange(v);
+              const [lo, hi] = v.split("-").map(Number);
+              if (v === "250+") {
+                setMinPrice("250");
+                setMaxPrice(null);
+              } else if (!Number.isNaN(lo) && !Number.isNaN(hi)) {
+                setMinPrice(String(lo));
+                setMaxPrice(String(hi));
+              }
+            }}
+          >
+            <SelectTrigger className="h-9 w-[130px] shrink-0 rounded-[5px] border-zinc-200">
+              <SelectValue placeholder="Price" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__any__">Price</SelectItem>
+              {PRICE_OPTIONS.filter((o) => o.value).map((o) => (
+                <SelectItem key={o.value} value={o.value}>
+                  {o.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        {/* Seats dropdown */}
-        <Select
-          value={seatsMin || "__any__"}
-          onValueChange={(v) => setSeatsMin(v === "__any__" ? null : v)}
-        >
-          <SelectTrigger className="h-9 w-[100px] shrink-0 rounded-lg border-zinc-200">
-            <SelectValue placeholder="Seats" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__any__">Seats</SelectItem>
-            {SEATS_OPTIONS.filter((o) => o.value).map((o) => (
-              <SelectItem key={o.value} value={o.value}>
-                {o.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {/* Fuel type dropdown */}
-        <Select
-          value={fuelType || "__any__"}
-          onValueChange={(v) => setFuelType(v === "__any__" ? null : v)}
-        >
-          <SelectTrigger className="h-9 w-[120px] shrink-0 rounded-lg border-zinc-200">
-            <SelectValue placeholder="Fuel type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__any__">Fuel type</SelectItem>
-            {FUEL_OPTIONS.filter((o) => o.value).map((o) => (
-              <SelectItem key={o.value} value={o.value}>
-                {o.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          {/* Bedrooms dropdown */}
+          <Select
+            value={seatsMin || "__any__"}
+            onValueChange={(v) => setSeatsMin(v === "__any__" ? null : v)}
+          >
+            <SelectTrigger className="h-9 w-[120px] shrink-0 rounded-[5px] border-zinc-200">
+              <SelectValue placeholder="Bedrooms" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__any__">Bedrooms</SelectItem>
+              {BEDROOMS_OPTIONS.map((o) => (
+                <SelectItem key={o.value} value={o.value}>
+                  {o.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -309,6 +280,7 @@ export function SearchFilterBar() {
           </TabsTrigger>
         </TabsList>
       </Tabs>
+      </div>
     </div>
   );
 }

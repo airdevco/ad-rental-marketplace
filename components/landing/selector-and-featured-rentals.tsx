@@ -47,9 +47,9 @@ export function SelectorAndFeaturedRentals() {
 
   return (
     <div>
-      {/* Full-bleed tab bar — border-b must be the containing border so -mb-px on tabs aligns */}
-      <div className="relative left-1/2 w-screen -ml-[50vw] border-b border-zinc-100">
-        <div className="container mx-auto max-w-[1400px] pt-5">
+      {/* Tab bar: normal width on mobile (avoids 100vw horizontal scroll), full-bleed from md up */}
+      <div className="w-full border-b border-zinc-100 md:relative md:left-1/2 md:w-screen md:-ml-[50vw]">
+        <div className="container mx-auto max-w-[1400px] px-4 pt-5 sm:px-6 lg:px-8">
           <VehicleTypeSelector value={selectedCategory} onChange={handleTypeChange} />
         </div>
       </div>

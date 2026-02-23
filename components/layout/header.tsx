@@ -48,7 +48,7 @@ export function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, [isHome, isSearchPage]);
 
-  const showBorder = showHeaderSearch || (!isHome && !isListingPage);
+  const showBorder = showHeaderSearch || (!isHome && !isListingPage) || (isListingPage && scrolled);
   const headerBg = scrolled ? "bg-white" : "bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80";
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const hideLogoForSearch = showHeaderSearch && !isDesktop;
@@ -57,7 +57,7 @@ export function Header() {
 
   return (
     <header
-      className={`sticky top-0 z-50 w-full ${headerBg} ${showBorder ? "border-b border-zinc-100" : ""}`}
+      className={`fixed top-0 left-0 right-0 z-50 w-full ${headerBg} ${showBorder ? "border-b border-zinc-100" : ""}`}
     >
       <div
         className={cn(

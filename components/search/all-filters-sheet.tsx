@@ -40,29 +40,22 @@ const SORT_OPTIONS = [
   { value: "newest", label: "Newest" },
 ] as const;
 
-const VEHICLE_TYPE_OPTIONS: { id: VehicleCategory; label: string }[] = [
-  { id: "economy", label: "Economy" },
-  { id: "suvs", label: "SUVs" },
-  { id: "passenger-vans", label: "Passenger vans" },
-  { id: "pickup-truck", label: "Pickup trucks" },
-  { id: "premium", label: "Premium" },
+const PROPERTY_TYPE_OPTIONS: { id: VehicleCategory; label: string }[] = [
+  { id: "economy", label: "Apartments" },
+  { id: "suvs", label: "Houses" },
+  { id: "passenger-vans", label: "Condos" },
+  { id: "pickup-truck", label: "Cabins" },
+  { id: "premium", label: "Beachfront" },
   { id: "luxury", label: "Luxury" },
 ];
 
-const SEATS_OPTIONS = [
+const BEDROOMS_OPTIONS = [
   { value: "", label: "Any" },
+  { value: "1", label: "1+" },
   { value: "2", label: "2+" },
+  { value: "3", label: "3+" },
   { value: "4", label: "4+" },
   { value: "5", label: "5+" },
-  { value: "7", label: "7+" },
-  { value: "10", label: "10+" },
-];
-
-const FUEL_OPTIONS = [
-  { value: "", label: "Any" },
-  { value: "gas", label: "Gas" },
-  { value: "electric", label: "Electric" },
-  { value: "hybrid", label: "Hybrid" },
 ];
 
 type FilterValues = {
@@ -209,7 +202,7 @@ function FilterFormContent({
                 setValues((prev) => ({ ...prev, sort: v }))
               }
             >
-              <SelectTrigger className="min-h-9 w-full">
+              <SelectTrigger className="min-h-9 w-full rounded-[5px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -229,13 +222,13 @@ function FilterFormContent({
 
           <Separator />
 
-          {/* Vehicle type - multiselect */}
+          {/* Property type - multiselect */}
           <div>
             <Label className="mb-3 block text-sm font-medium">
-              Vehicle type
+              Property type
             </Label>
             <div className="flex flex-col gap-2">
-              {VEHICLE_TYPE_OPTIONS.map(({ id, label }) => (
+              {PROPERTY_TYPE_OPTIONS.map(({ id, label }) => (
                 <label
                   key={id}
                   className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5"
@@ -252,10 +245,10 @@ function FilterFormContent({
 
           <Separator />
 
-          {/* Seats */}
+          {/* Bedrooms */}
           <div>
             <Label className="mb-2 block text-sm font-medium">
-              Minimum seats
+              Bedrooms
             </Label>
             <Select
               value={values.seats || "__any__"}
@@ -266,40 +259,12 @@ function FilterFormContent({
                 }))
               }
             >
-              <SelectTrigger className="min-h-9 w-full">
+              <SelectTrigger className="min-h-9 w-full rounded-[5px]">
                 <SelectValue placeholder="Any" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="__any__">Any</SelectItem>
-                {SEATS_OPTIONS.filter((o) => o.value).map((o) => (
-                  <SelectItem key={o.value} value={o.value}>
-                    {o.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Fuel type */}
-          <div>
-            <Label className="mb-2 block text-sm font-medium">
-              Fuel type
-            </Label>
-            <Select
-              value={values.fuel || "__any__"}
-              onValueChange={(v) =>
-                setValues((prev) => ({
-                  ...prev,
-                  fuel: v === "__any__" ? "" : v,
-                }))
-              }
-            >
-              <SelectTrigger className="min-h-9 w-full">
-                <SelectValue placeholder="Any" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__any__">Any</SelectItem>
-                {FUEL_OPTIONS.filter((o) => o.value).map((o) => (
+                {BEDROOMS_OPTIONS.filter((o) => o.value).map((o) => (
                   <SelectItem key={o.value} value={o.value}>
                     {o.label}
                   </SelectItem>
@@ -350,13 +315,13 @@ function FilterFormContent({
         <Button
           variant="outline"
           onClick={onReset}
-          className="min-h-10 shrink-0"
+          className="h-11 shrink-0 rounded-[5px]"
         >
           Reset
         </Button>
         <Button
           onClick={onApply}
-          className="min-h-10 shrink-0 px-8"
+          className="h-11 shrink-0 rounded-[5px] px-8"
         >
           Apply filters
         </Button>
@@ -417,7 +382,7 @@ export function AllFiltersSheet({
           showCloseButton={false}
         >
           <DialogHeader className="flex shrink-0 flex-row items-center justify-between border-b px-4 py-3">
-            <DialogTitle className="text-lg font-semibold">
+            <DialogTitle className="text-base font-semibold">
               All filters
             </DialogTitle>
             <Button
@@ -445,7 +410,7 @@ export function AllFiltersSheet({
         showCloseButton={false}
       >
         <SheetHeader className="flex shrink-0 flex-row items-center justify-between border-b px-4 py-3">
-          <SheetTitle className="text-lg font-semibold">All filters</SheetTitle>
+          <SheetTitle className="text-base font-semibold">All filters</SheetTitle>
           <Button
             variant="ghost"
             size="icon"

@@ -37,14 +37,14 @@ export function VehicleListingCard({ listing }: { listing: VehicleListing }) {
           </span>
         </div>
 
-        <p className="mt-0.5 text-sm text-zinc-500">{listing.subtitle}</p>
-        <p className="text-sm text-zinc-400">
+        <p className="mt-0.5 text-sm text-muted-foreground">{listing.subtitle}</p>
+        <p className="text-sm text-muted-foreground">
           {bedrooms} bed{bedrooms !== 1 ? "s" : ""} · {bathrooms} bath{bathrooms !== 1 ? "s" : ""} · {guests} guest{guests !== 1 ? "s" : ""}
         </p>
 
         <p className="mt-1.5 text-sm text-zinc-900">
           <span className="font-semibold">${listing.pricePerDay}</span>
-          <span className="text-zinc-400"> / night</span>
+          <span className="text-muted-foreground"> / night</span>
         </p>
       </div>
     </Link>

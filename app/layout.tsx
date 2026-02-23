@@ -31,7 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className="antialiased min-h-screen flex flex-col font-sans"
+        className="antialiased min-h-screen flex flex-col font-sans overflow-x-hidden"
       >
         <a href="#main-content" className="skip-link">
           Skip to content
@@ -40,7 +40,7 @@ export default function RootLayout({
           <ListingScrollProvider>
             <SearchModalProvider>
               <Header />
-              <main id="main-content" className="flex-1 w-full">
+              <main id="main-content" className="flex-1 w-full pt-16">
                 {children}
               </main>
               <Footer />

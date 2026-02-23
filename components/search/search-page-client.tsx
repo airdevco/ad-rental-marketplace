@@ -7,10 +7,6 @@ import { SearchMapPanel } from "@/components/search/search-map-panel";
 import { useQueryState } from "nuqs";
 
 export function SearchPageClient() {
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
   const [view] = useQueryState("view", {
     defaultValue: "map",
     parse: (v) => (v === "grid" ? "grid" : "map"),
@@ -19,23 +15,23 @@ export function SearchPageClient() {
 
   const isGrid = view === "grid";
 
-  return (
-    <div className="flex min-h-[calc(100vh-4rem)] flex-col">
-      {/* Filter bar sticky at top (z-40); content below can scroll so footer appears at end of list */}
-      <SearchFilterBar />
+  // Scroll to top whenever the view switches
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [view]);
 
-      {/* Main content - grows with list so footer shows when user scrolls to end */}
-      <div className="relative flex min-h-0 flex-1 flex-col">
-        {isGrid ? (
-          <div className="w-full overflow-auto bg-background">
-            <div className="w-full px-4 py-6 sm:px-6">
-              <VehicleSearchResults />
-            </div>
-          </div>
-        ) : (
-          <SearchMapPanel />
-        )}
-      </div>
-    </div>
+  return (
+    <>
+      <SearchFilterBar />
+      {/* Spacer so content starts below the fixed filter bar (~56px) */}
+      <div className="h-14 shrink-0" aria-hidden />
+      {isGrid ? (
+        <div className="w-full px-4 py-6 sm:px-6">
+          <VehicleSearchResults />
+        </div>
+      ) : (
+        <SearchMapPanel />
+      )}
+    </>
   );
 }

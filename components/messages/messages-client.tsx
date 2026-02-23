@@ -3,22 +3,37 @@
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Search, ImageIcon, Send, ChevronRight } from "lucide-react";
+import {
+  Search,
+  ImageIcon,
+  Send,
+  ChevronRight,
+  Wifi,
+  Home,
+  MapPin as MapPinLucide,
+  Clock,
+  Users,
+  BedDouble,
+  Bath,
+  ShieldCheck,
+  Cigarette,
+  PawPrint,
+  PartyPopper,
+} from "lucide-react";
 import { MapPin, Calendar, Star } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 /* -------------------------------------------------------------------------- */
-/*  Dummy data                                                                 */
+/*  Mock data — home rentals                                                   */
 /* -------------------------------------------------------------------------- */
 
-const TESLA_IMAGE =
-  "https://images.turo.com/media/vehicle/images/ewUbL3QrTLCokGPQPCpsbw.1242x745.jpg";
+const LISTING_IMAGE =
+  "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&h=600&fit=crop";
 
 const DUMMY_USERS = [
   {
@@ -73,55 +88,55 @@ const MOCK_THREADS: Thread[] = [
   {
     id: "t1",
     userId: "u1",
-    preview: "Great, the Tesla Model Y will be ready for you at the pickup location. See you then!",
+    preview: "The lockbox code is 4821. Check-in is any time after 3 PM — see you soon!",
     time: "2m ago",
     unread: true,
-    listingTitle: "Tesla Model Y 2024",
+    listingTitle: "Sunny Studio · San Francisco",
     dates: "May 15 – 18",
   },
   {
     id: "t2",
     userId: "u2",
-    preview: "Thanks for the booking! Let me know if you need anything.",
+    preview: "Thanks for choosing our beach house! Let me know if you need anything.",
     time: "1h ago",
     unread: true,
-    listingTitle: "Toyota RAV4",
+    listingTitle: "Beach House · Malibu",
     dates: "May 20 – 22",
   },
   {
     id: "t3",
     userId: "u3",
-    preview: "Check-in is after 3pm. I'll leave the key in the lockbox.",
+    preview: "Self check-in instructions have been sent to your email.",
     time: "3h ago",
     unread: false,
-    listingTitle: "BMW 3 Series",
+    listingTitle: "Downtown Loft · Chicago",
     dates: "Jun 1 – 4",
   },
   {
     id: "t4",
     userId: "u4",
-    preview: "You're welcome! Enjoy the drive.",
+    preview: "Hope you enjoyed your stay! Don't forget to leave a review.",
     time: "Yesterday",
     unread: false,
-    listingTitle: "Honda CR-V",
+    listingTitle: "Garden Cottage · Berkeley",
     dates: "Apr 10 – 12",
   },
   {
     id: "t5",
     userId: "u5",
-    preview: "I've updated the pickup instructions. Let me know if the new location works for you.",
+    preview: "The WiFi password is written on the card by the fridge.",
     time: "2d ago",
     unread: false,
-    listingTitle: "Mercedes C-Class",
+    listingTitle: "Mountain Cabin · Lake Tahoe",
     dates: "May 25 – 28",
   },
   {
     id: "t6",
     userId: "u6",
-    preview: "Hi! I saw your review — thank you so much!",
+    preview: "Thank you for the kind review — you're welcome back anytime!",
     time: "1w ago",
     unread: false,
-    listingTitle: "Ford F-150",
+    listingTitle: "Historic Brownstone · Boston",
     dates: "Mar 1 – 4",
   },
 ];
@@ -134,58 +149,85 @@ type Message = {
 
 const MOCK_MESSAGES: Record<string, Message[]> = {
   t1: [
-    { from: "u1", text: "Hi! Welcome to Rento. I'm Alex, the host for the Tesla Model Y 2024. Your reservation for May 15–18 is confirmed.", time: "10:15 AM" },
-    { from: "me", text: "Thanks Alex! Really excited. Can I pick it up a bit earlier, around 9 AM?", time: "10:18 AM" },
-    { from: "u1", text: "Absolutely, 9 AM works. The car will be fully charged and ready to go at 123 Market St.", time: "10:22 AM" },
-    { from: "me", text: "Perfect. Is there anything I should know about the charging?", time: "10:25 AM" },
-    { from: "u1", text: "The car has about 290 miles of range when full. There are Superchargers all along the 101 if you need them. I'll share the Tesla app access with you the day before so you can see the charge level and pre-condition the cabin.", time: "10:30 AM" },
-    { from: "me", text: "That's great. And parking — is it street parking at the pickup location?", time: "10:33 AM" },
-    { from: "u1", text: "There's a garage at 123 Market. I'll text you the access code. Spot B-14.", time: "10:36 AM" },
-    { from: "me", text: "Awesome, thank you! See you on the 15th.", time: "10:38 AM" },
-    { from: "u1", text: "Great, the Tesla Model Y will be ready for you at the pickup location. See you then!", time: "10:40 AM" },
+    { from: "u1", text: "Hi! Welcome to Rento. I'm Alex, your host for the Sunny Studio in San Francisco. Your reservation for May 15–18 is confirmed.", time: "10:15 AM" },
+    { from: "me", text: "Thanks Alex! Super excited. What time can I check in?", time: "10:18 AM" },
+    { from: "u1", text: "Check-in is any time after 3 PM. The studio is on the 4th floor — there's an elevator in the lobby.", time: "10:22 AM" },
+    { from: "me", text: "Perfect. And how does entry work? Is there a keypad?", time: "10:25 AM" },
+    { from: "u1", text: "Yes! There's a lockbox on the front door of the building. The code is 4821. Your unit key is inside. The apartment door uses the same key.", time: "10:30 AM" },
+    { from: "me", text: "Great. Is parking available nearby?", time: "10:33 AM" },
+    { from: "u1", text: "Street parking on Oak St is free after 6 PM and all day Sunday. There's also a paid garage one block east on Fell — about $18/day.", time: "10:36 AM" },
+    { from: "me", text: "That works, thanks! One last thing — is there a washer/dryer?", time: "10:38 AM" },
+    { from: "u1", text: "There's a shared laundry room on the ground floor. Quarters or the app — both work. The lockbox code is 4821. Check-in is any time after 3 PM — see you soon!", time: "10:40 AM" },
   ],
   t2: [
-    { from: "u2", text: "Hi! Your booking for the RAV4 is confirmed for May 20–22.", time: "9:00 AM" },
-    { from: "me", text: "Thank you Sarah! Looking forward to it.", time: "9:05 AM" },
-    { from: "u2", text: "Thanks for the booking! Let me know if you need anything.", time: "9:10 AM" },
+    { from: "u2", text: "Hi! Your booking for the Malibu Beach House is confirmed for May 20–22. I'm so glad you chose us!", time: "9:00 AM" },
+    { from: "me", text: "We're so excited, Sarah! This is our anniversary trip.", time: "9:05 AM" },
+    { from: "u2", text: "How wonderful! I'll leave a welcome bottle of champagne in the fridge. Thanks for choosing our beach house! Let me know if you need anything.", time: "9:10 AM" },
   ],
   t3: [
-    { from: "u3", text: "Hey, just a heads up — check-in is after 3pm.", time: "Yesterday" },
-    { from: "u3", text: "Check-in is after 3pm. I'll leave the key in the lockbox.", time: "Yesterday" },
+    { from: "u3", text: "Hey! Quick heads-up — check-in is after 3 PM. There's a smart lock on the door; I'll send your code 24 hours before arrival.", time: "Yesterday" },
+    { from: "u3", text: "Self check-in instructions have been sent to your email.", time: "Yesterday" },
   ],
   t4: [
-    { from: "me", text: "Thanks for a great rental experience!", time: "2d ago" },
-    { from: "u4", text: "You're welcome! Enjoy the drive.", time: "2d ago" },
+    { from: "me", text: "Jordan, the cottage was absolutely lovely. Thank you for the warm welcome basket!", time: "2d ago" },
+    { from: "u4", text: "Hope you enjoyed your stay! Don't forget to leave a review.", time: "2d ago" },
   ],
   t5: [
-    { from: "u5", text: "Hi! Pickup location has changed to 200 Stuart St, Boston.", time: "3d ago" },
-    { from: "u5", text: "I've updated the pickup instructions. Let me know if the new location works for you.", time: "3d ago" },
+    { from: "u5", text: "Hi! Heads up — the WiFi network is 'CabinGuest' and the password is on a card by the fridge.", time: "3d ago" },
+    { from: "u5", text: "The WiFi password is written on the card by the fridge.", time: "3d ago" },
   ],
   t6: [
-    { from: "u6", text: "Hi! I saw your review — thank you so much!", time: "1w ago" },
+    { from: "u6", text: "I just saw your review — it really made my day. Thank you for being such a wonderful guest!", time: "1w ago" },
   ],
 };
 
-/* Booking detail for the selected thread (hardcoded to Tesla Model Y for t1) */
+/* Booking detail for the selected thread */
 const BOOKING_DETAIL = {
-  listingId: "e1",
-  title: "Tesla Model Y 2024",
-  subtitle: "or similar electric SUV",
-  image: TESLA_IMAGE,
+  listingId: "1",
+  title: "Sunny Studio in the Mission",
+  subtitle: "Entire studio · San Francisco, CA",
+  image: LISTING_IMAGE,
   hostName: "Alex Chen",
   hostPhoto: DUMMY_USERS[0].photo,
-  rating: 4.87,
-  trips: 42,
-  dates: "May 15, 9:00 AM – May 18, 12:00 PM",
-  location: "123 Market St, San Francisco, CA",
-  days: 3,
-  pricePerDay: 32,
-  serviceFee: 12,
-  insurance: 18,
+  hostJoined: "2021",
+  hostReviewCount: 38,
+  rating: 4.91,
+  reviewCount: 52,
+  checkIn: "May 15",
+  checkOut: "May 18",
+  checkInTime: "3:00 PM",
+  checkOutTime: "11:00 AM",
+  location: "Mission District, San Francisco, CA 94110",
+  nights: 3,
+  pricePerNight: 120,
+  serviceFee: 42,
+  cleaningFee: 30,
+  facts: {
+    bedrooms: 1,
+    bathrooms: 1,
+    guests: 2,
+    type: "Entire studio",
+  },
+  gettingThere: "Walk 5 min to 16th St BART station. Direct service to SFO and downtown. Street parking on Oak St free after 6 PM.",
+  wifiName: "MissionStudio_Guest",
+  wifiPassword: "sunshine2024",
+  houseRules: [
+    { icon: Clock, text: "Check-in after 3:00 PM, checkout by 11:00 AM" },
+    { icon: Cigarette, text: "No smoking anywhere on the property" },
+    { icon: PawPrint, text: "No pets allowed" },
+    { icon: PartyPopper, text: "No parties or events" },
+  ],
+  hostReview: {
+    text: "Great guest — left the studio spotless and communicated clearly throughout. Would host again without hesitation.",
+    reviewer: "Sarah M.",
+    reviewerPhoto: DUMMY_USERS[1].photo,
+    reviewerInitials: "SM",
+    date: "April 2024",
+  },
 };
 
 /* -------------------------------------------------------------------------- */
-/*  Components                                                                 */
+/*  Thread list                                                                */
 /* -------------------------------------------------------------------------- */
 
 function ThreadList({
@@ -209,28 +251,25 @@ function ThreadList({
     : threads;
 
   return (
-    <aside className="flex w-full shrink-0 flex-col border-r border-zinc-200 bg-white md:w-72 lg:w-[300px]">
-      {/* Header - border extends to viewport left */}
-      <div className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-200 -ml-4 sm:-ml-6">
+    <aside className="flex w-full shrink-0 flex-col border-r border-zinc-100 bg-white md:w-72 lg:w-[300px]">
+      <div className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-100 -ml-4 sm:-ml-6">
         <div className="pl-4 sm:pl-6">
           <h1 className="text-lg font-bold text-zinc-900">Messages</h1>
         </div>
       </div>
 
-      {/* Search - border extends to viewport left */}
-      <div className="border-b border-zinc-200 -ml-4 sm:-ml-6">
+      <div className="border-b border-zinc-100 -ml-4 sm:-ml-6">
         <div className="relative py-2 pl-4 pr-3 sm:pl-6 sm:pr-3">
-          <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-zinc-400 sm:left-6 ml-3 mr-3" />
+          <Search className="absolute left-7 top-1/2 size-4 -translate-y-1/2 text-muted-foreground sm:left-9" />
           <Input
             placeholder="Search messages"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-9 pl-9 text-sm sm:pl-10 focus-visible:border focus-visible:border-primary focus-visible:ring-0"
+            className="h-9 pl-9 text-sm focus-visible:border focus-visible:border-primary focus-visible:ring-0"
           />
         </div>
       </div>
 
-      {/* Thread list - scroll area extends to sides so hover/selected gray is full width */}
       <div className="flex-1 overflow-y-auto overflow-x-visible">
         <div className="-mx-4 w-[calc(100%+2rem)] sm:-mx-6 sm:w-[calc(100%+3rem)]">
           <ul className="list-none p-0">
@@ -247,43 +286,47 @@ function ThreadList({
                       isActive && "bg-zinc-100"
                     )}
                   >
-                  <Avatar className="size-12 shrink-0">
-                    <AvatarImage src={user.photo} alt={user.name} />
-                    <AvatarFallback>{user.initials}</AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className={cn(
-                        "truncate text-sm",
-                        thread.unread ? "font-semibold text-zinc-900" : "font-medium text-zinc-700"
+                    <Avatar className="size-10 shrink-0">
+                      <AvatarImage src={user.photo} alt={user.name} />
+                      <AvatarFallback>{user.initials}</AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className={cn(
+                          "truncate text-sm",
+                          thread.unread ? "font-semibold text-zinc-900" : "font-medium text-zinc-700"
+                        )}>
+                          {user.name}
+                        </span>
+                        <span className="shrink-0 text-xs text-muted-foreground">
+                          {thread.time}
+                        </span>
+                      </div>
+                      <p className="mt-0.5 truncate text-xs text-muted-foreground">{thread.listingTitle} · {thread.dates}</p>
+                      <p className={cn(
+                        "mt-0.5 truncate text-sm",
+                        thread.unread ? "font-medium text-zinc-800" : "text-muted-foreground"
                       )}>
-                        {user.name}
-                      </span>
-                      <span className="shrink-0 text-xs text-zinc-400">
-                        {thread.time}
-                      </span>
+                        {thread.preview}
+                      </p>
                     </div>
-                    <p className="mt-0.5 text-xs text-zinc-500">{thread.listingTitle} &middot; {thread.dates}</p>
-                    <p className={cn(
-                      "mt-0.5 truncate text-sm",
-                      thread.unread ? "font-medium text-zinc-800" : "text-zinc-500"
-                    )}>
-                      {thread.preview}
-                    </p>
-                  </div>
-                  {thread.unread && (
-                    <span className="mt-1.5 size-2.5 shrink-0 rounded-full bg-[#156EF5]" aria-label="Unread" />
-                  )}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+                    {thread.unread && (
+                      <span className="mt-1.5 size-2 shrink-0 rounded-full bg-primary" aria-label="Unread" />
+                    )}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
         </div>
       </div>
     </aside>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/*  Conversation panel                                                         */
+/* -------------------------------------------------------------------------- */
 
 function ConversationPanel({
   thread,
@@ -304,51 +347,49 @@ function ConversationPanel({
 
   return (
     <div className="flex min-w-0 flex-1 flex-col">
-      {/* Conversation header - border full width, padding inside */}
-      <div className="flex h-14 shrink-0 items-center gap-3 border-b border-zinc-200">
-        <div className="flex min-w-0 flex-1 items-center gap-3 px-4 sm:px-6">
-          <Avatar className="size-9">
-            <AvatarImage src={user.photo} alt={user.name} />
-            <AvatarFallback>{user.initials}</AvatarFallback>
-          </Avatar>
-          <div className="min-w-0 flex-1">
-            <h2 className="text-sm font-semibold text-zinc-900">{user.name}</h2>
-            <p className="text-xs text-zinc-500">{thread.listingTitle} &middot; {thread.dates}</p>
-          </div>
+      {/* Header */}
+      <div className="flex h-14 shrink-0 items-center gap-3 border-b border-zinc-100 px-4 sm:px-6">
+        <Avatar className="size-9 shrink-0">
+          <AvatarImage src={user.photo} alt={user.name} />
+          <AvatarFallback>{user.initials}</AvatarFallback>
+        </Avatar>
+        <div className="min-w-0 flex-1">
+          <h2 className="text-sm font-semibold text-zinc-900">{user.name}</h2>
+          <p className="truncate text-xs text-muted-foreground">{thread.listingTitle} · {thread.dates}</p>
         </div>
       </div>
 
-      {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-auto px-4 py-4 sm:px-6" tabIndex={0}>
-        <div className="mx-auto max-w-2xl space-y-3">
+      {/* Messages — no mx-auto, bubbles anchor to their respective sides */}
+      <div ref={scrollRef} className="flex-1 overflow-auto px-4 py-5 sm:px-6" tabIndex={0}>
+        <div className="flex flex-col gap-3">
           {messages.map((msg, i) => {
             const isMe = msg.from === "me";
             const sender = isMe ? null : getUserById(msg.from);
             if (isMe) {
               return (
                 <div key={i} className="flex justify-end">
-                  <div className="max-w-[75%]">
-                    <div className="rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl rounded-br-0 bg-[#1e3a5f] px-3.5 py-2.5 text-white">
+                  <div className="max-w-[72%]">
+                    <div className="rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl rounded-br-sm bg-primary px-3.5 py-2.5 text-white">
                       <p className="text-sm leading-relaxed">{msg.text}</p>
                     </div>
-                    <p className="mt-1 text-right text-[11px] text-zinc-400">{msg.time}</p>
+                    <p className="mt-1 text-right text-[11px] text-muted-foreground">{msg.time}</p>
                   </div>
                 </div>
               );
             }
             return (
               <div key={i} className="flex justify-start">
-                <div className="flex max-w-[75%] flex-col">
+                <div className="flex max-w-[72%] flex-col">
                   <div className="flex items-end gap-2">
                     <Avatar className="size-7 shrink-0">
                       <AvatarImage src={sender!.photo} alt={sender!.name} />
                       <AvatarFallback>{sender!.initials}</AvatarFallback>
                     </Avatar>
-                    <div className="rounded-tl-2xl rounded-tr-2xl rounded-br-2xl rounded-bl-0 bg-zinc-100 px-3.5 py-2.5 text-zinc-900">
+                    <div className="rounded-tl-2xl rounded-tr-2xl rounded-br-2xl rounded-bl-sm bg-zinc-100 px-3.5 py-2.5 text-zinc-900">
                       <p className="text-sm leading-relaxed">{msg.text}</p>
                     </div>
                   </div>
-                  <p className="mt-1 text-left text-[11px] text-zinc-400">{msg.time}</p>
+                  <p className="mt-1 pl-9 text-[11px] text-muted-foreground">{msg.time}</p>
                 </div>
               </div>
             );
@@ -356,9 +397,8 @@ function ConversationPanel({
         </div>
       </div>
 
-      {/* Compose - border full width, padding inside */}
-      <div className="border-t border-zinc-200">
-        <div className="px-4 py-3 sm:px-6">
+      {/* Compose */}
+      <div className="border-t border-zinc-100 px-4 py-3 sm:px-6">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -366,12 +406,10 @@ function ConversationPanel({
           }}
           className="flex items-end gap-2"
         >
-          <Label htmlFor="message-input" className="sr-only">
-            Write a message
-          </Label>
+          <Label htmlFor="message-input" className="sr-only">Write a message</Label>
           <button
             type="button"
-            className="flex size-10 shrink-0 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600"
+            className="flex size-10 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-zinc-100 hover:text-zinc-600"
             aria-label="Attach photo"
           >
             <ImageIcon className="size-5" />
@@ -387,157 +425,246 @@ function ConversationPanel({
           <Button
             type="submit"
             size="icon"
-            className="size-10 shrink-0 rounded-full bg-[#156EF5] hover:bg-[#125bd4]"
+            className="size-10 shrink-0 rounded-full bg-primary hover:bg-primary/90"
             aria-label="Send message"
           >
             <Send className="size-4 text-white" />
           </Button>
         </form>
-        </div>
       </div>
     </div>
   );
 }
 
+/* -------------------------------------------------------------------------- */
+/*  Booking detail panel (right sidebar — rich scrollable column)             */
+/* -------------------------------------------------------------------------- */
+
 function BookingDetailPanel({ thread }: { thread: Thread }) {
-  const booking = BOOKING_DETAIL;
-  const subtotal = booking.days * booking.pricePerDay;
-  const total = subtotal + booking.serviceFee + booking.insurance;
+  const b = BOOKING_DETAIL;
+  const subtotal = b.nights * b.pricePerNight;
+  const total = subtotal + b.serviceFee + b.cleaningFee;
 
   return (
-    <aside className="hidden w-[400px] shrink-0 flex-col border-l border-zinc-200 bg-white xl:flex xl:w-[440px]">
-      {/* Header - border extends to viewport right (no overflow on aside so margin isn't clipped) */}
-      <div className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-200 -mr-4 sm:-mr-6">
-        <div className="pl-5 pr-4 sm:pr-6">
-          <h2 className="text-sm font-semibold text-zinc-900">Booking details</h2>
-        </div>
+    <aside className="hidden w-[360px] shrink-0 flex-col border-l border-zinc-100 bg-white xl:flex xl:w-[400px]">
+      {/* Header */}
+      <div className="flex h-14 shrink-0 items-center border-b border-zinc-100 px-5">
+        <h2 className="text-sm font-semibold text-zinc-900">Reservation details</h2>
       </div>
 
-      <div className="flex flex-1 flex-col gap-5 overflow-auto p-5">
-        {/* Listing card with image */}
-        <Link href={`/listing/${booking.listingId}`} className="group block">
-          <div className="relative aspect-[16/10] w-full overflow-hidden rounded-xl bg-zinc-100">
-            <Image
-              src={booking.image}
-              alt={booking.title}
-              fill
-              className="object-cover transition-transform duration-200 group-hover:scale-105"
-              sizes="360px"
-            />
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="flex flex-col gap-0">
+
+          {/* Listing image + title + rating */}
+          <div className="p-5 pb-4">
+            <Link href={`/listing/${b.listingId}`} className="group block">
+              <div className="relative aspect-[16/10] w-full overflow-hidden rounded-xl bg-zinc-100">
+                <Image
+                  src={b.image}
+                  alt={b.title}
+                  fill
+                  className="object-cover transition-transform duration-200 group-hover:scale-105"
+                  sizes="400px"
+                />
+              </div>
+              <div className="mt-3">
+                <h3 className="font-semibold text-zinc-900 group-hover:underline">{b.title}</h3>
+                <p className="mt-0.5 text-xs text-muted-foreground">{b.subtitle}</p>
+                <div className="mt-1.5 flex items-center gap-1">
+                  <Star size={13} weight="fill" className="text-zinc-900 shrink-0" />
+                  <span className="text-sm font-semibold tabular-nums text-zinc-900">{b.rating.toFixed(2)}</span>
+                  <span className="text-sm text-muted-foreground">· {b.reviewCount} reviews</span>
+                </div>
+              </div>
+            </Link>
           </div>
-          <div className="mt-3">
-            <h3 className="font-semibold text-zinc-900">{booking.title}</h3>
-            <div className="mt-1 flex items-center gap-1.5">
-              <Star size={14} weight="fill" className="text-amber-400" />
-              <span className="text-sm font-medium tabular-nums text-zinc-700">
-                {booking.rating.toFixed(2)}
+
+          <Separator className="bg-zinc-100" />
+
+          {/* Price summary + Reserve */}
+          <div className="p-5 pb-4 space-y-3">
+            <div className="flex items-baseline gap-1">
+              <span className="text-xl font-bold tabular-nums text-zinc-900">${b.pricePerNight}</span>
+              <span className="text-sm text-muted-foreground">/ night</span>
+            </div>
+            {/* Check-in / Check-out */}
+            <div className="grid grid-cols-2 divide-x divide-zinc-100 overflow-hidden rounded-lg border border-zinc-200">
+              <div className="px-3 py-2.5">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Check-in</p>
+                <p className="mt-0.5 text-sm font-medium text-zinc-900">{b.checkIn}</p>
+              </div>
+              <div className="px-3 py-2.5">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Checkout</p>
+                <p className="mt-0.5 text-sm font-medium text-zinc-900">{b.checkOut}</p>
+              </div>
+            </div>
+            {/* Price breakdown */}
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">${b.pricePerNight} × {b.nights} nights</span>
+                <span className="tabular-nums font-medium text-zinc-900">${subtotal}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Cleaning fee</span>
+                <span className="tabular-nums font-medium text-zinc-900">${b.cleaningFee}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Service fee</span>
+                <span className="tabular-nums font-medium text-zinc-900">${b.serviceFee}</span>
+              </div>
+              <Separator className="bg-zinc-100" />
+              <div className="flex justify-between font-semibold text-zinc-900">
+                <span>Total</span>
+                <span className="tabular-nums">${total}</span>
+              </div>
+            </div>
+            <Button asChild className="h-11 w-full rounded-[5px] bg-primary font-semibold hover:bg-primary/90 shadow-none">
+              <Link href={`/checkout?listingId=${b.listingId}`}>Reserve</Link>
+            </Button>
+          </div>
+
+          <Separator className="bg-zinc-100" />
+
+          {/* Facts about the place */}
+          <div className="p-5 pb-4">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Facts about the place</p>
+            <div className="mt-3 grid grid-cols-2 gap-2.5">
+              <div className="flex items-center gap-2 text-sm text-zinc-700">
+                <BedDouble className="size-4 shrink-0 text-muted-foreground" />
+                {b.facts.bedrooms} bedroom{b.facts.bedrooms !== 1 ? "s" : ""}
+              </div>
+              <div className="flex items-center gap-2 text-sm text-zinc-700">
+                <Bath className="size-4 shrink-0 text-muted-foreground" />
+                {b.facts.bathrooms} bathroom{b.facts.bathrooms !== 1 ? "s" : ""}
+              </div>
+              <div className="flex items-center gap-2 text-sm text-zinc-700">
+                <Users className="size-4 shrink-0 text-muted-foreground" />
+                {b.facts.guests} guests max
+              </div>
+              <div className="flex items-center gap-2 text-sm text-zinc-700">
+                <Home className="size-4 shrink-0 text-muted-foreground" />
+                {b.facts.type}
+              </div>
+            </div>
+          </div>
+
+          <Separator className="bg-zinc-100" />
+
+          {/* Getting there */}
+          <div className="p-5 pb-4">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Getting there</p>
+            <p className="mt-2.5 text-sm text-muted-foreground leading-relaxed">{b.gettingThere}</p>
+            <button
+              type="button"
+              className="mt-2.5 flex w-full items-center justify-between rounded-md py-1 text-sm font-medium text-zinc-900 hover:text-primary transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <MapPinLucide className="size-4 shrink-0 text-muted-foreground" />
+                {b.location}
               </span>
-              <span className="text-sm text-zinc-400">&middot;</span>
-              <span className="text-sm text-zinc-500">{booking.trips} trips</span>
+              <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+            </button>
+          </div>
+
+          <Separator className="bg-zinc-100" />
+
+          {/* Check-in */}
+          <div className="p-5 pb-4">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Check-in</p>
+            <div className="mt-3 space-y-2">
+              <div className="flex items-center gap-2 text-sm">
+                <Clock className="size-4 shrink-0 text-muted-foreground" />
+                <span className="text-zinc-700">After {b.checkInTime}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <ShieldCheck className="size-4 shrink-0 text-muted-foreground" />
+                <span className="text-zinc-700">Self check-in via lockbox</span>
+              </div>
             </div>
           </div>
-        </Link>
 
-        <Separator />
+          <Separator className="bg-zinc-100" />
 
-        {/* Host */}
-        <div>
-          <p className="text-xs font-medium uppercase tracking-wider text-zinc-400">
-            Hosted by
-          </p>
-          <div className="mt-2 flex items-center gap-3">
-            <Avatar className="size-10">
-              <AvatarImage src={booking.hostPhoto} alt={booking.hostName} />
-              <AvatarFallback>AC</AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="text-sm font-medium text-zinc-900">{booking.hostName}</p>
-              <p className="text-xs text-zinc-500">Joined 2023</p>
+          {/* WiFi */}
+          <div className="p-5 pb-4">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">WiFi</p>
+            <div className="mt-3 space-y-2">
+              <div className="flex items-center gap-2 text-sm">
+                <Wifi className="size-4 shrink-0 text-muted-foreground" />
+                <div>
+                  <span className="text-zinc-700">Network: </span>
+                  <span className="font-medium text-zinc-900">{b.wifiName}</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-sm pl-6">
+                <span className="text-zinc-700">Password: </span>
+                <span className="font-medium text-zinc-900">{b.wifiPassword}</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <Separator />
+          <Separator className="bg-zinc-100" />
 
-        {/* Trip details */}
-        <div>
-          <p className="text-xs font-medium uppercase tracking-wider text-zinc-400">
-            Trip details
-          </p>
-          <div className="mt-3 space-y-2.5">
-            <div className="flex items-start gap-2.5 text-sm">
-              <Calendar size={16} weight="regular" className="mt-0.5 shrink-0 text-zinc-400" />
-              <span className="text-zinc-700">{booking.dates}</span>
-            </div>
-            <div className="flex items-start gap-2.5 text-sm">
-              <MapPin size={16} weight="regular" className="mt-0.5 shrink-0 text-zinc-400" />
-              <span className="text-zinc-700">{booking.location}</span>
+          {/* House rules */}
+          <div className="p-5 pb-4">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">House rules</p>
+            <ul className="mt-3 space-y-2.5">
+              {b.houseRules.map((rule, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm">
+                  <rule.icon className="size-4 mt-0.5 shrink-0 text-muted-foreground" />
+                  <span className="text-zinc-700">{rule.text}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <Separator className="bg-zinc-100" />
+
+          {/* Reviews by the host */}
+          <div className="p-5 pb-4">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Review by the host</p>
+            <div className="mt-3 space-y-3">
+              <p className="text-sm text-muted-foreground leading-relaxed italic">"{b.hostReview.text}"</p>
+              <div className="flex items-center gap-2.5">
+                <Avatar className="size-8 shrink-0">
+                  <AvatarImage src={b.hostReview.reviewerPhoto} alt={b.hostReview.reviewer} />
+                  <AvatarFallback>{b.hostReview.reviewerInitials}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-sm font-medium text-zinc-900">{b.hostReview.reviewer}</p>
+                  <p className="text-xs text-muted-foreground">{b.hostReview.date}</p>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <Separator />
+          <Separator className="bg-zinc-100" />
 
-        {/* Price breakdown */}
-        <div>
-          <p className="text-xs font-medium uppercase tracking-wider text-zinc-400">
-            Price breakdown
-          </p>
-          <Card className="mt-3 shadow-none">
-            <CardContent className="space-y-2.5 p-3">
-              <div className="flex justify-between text-sm">
-                <span className="text-zinc-500">
-                  {booking.days} days &times; ${booking.pricePerDay}/day
-                </span>
-                <span className="tabular-nums font-medium text-zinc-900">
-                  ${subtotal}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-zinc-500">Service fee</span>
-                <span className="tabular-nums font-medium text-zinc-900">
-                  ${booking.serviceFee}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-zinc-500">Insurance</span>
-                <span className="tabular-nums font-medium text-zinc-900">
-                  ${booking.insurance}
-                </span>
-              </div>
-              <Separator />
-              <div className="flex justify-between text-sm font-semibold">
-                <span className="text-zinc-900">Total</span>
-                <span className="tabular-nums text-zinc-900">${total}</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+          {/* Action buttons */}
+          <div className="p-5 space-y-2.5">
+            <Button
+              variant="outline"
+              className="h-11 w-full justify-between rounded-[5px] text-sm font-semibold text-zinc-700 shadow-none hover:bg-zinc-100"
+              asChild
+            >
+              <Link href={`/listing/${b.listingId}`}>
+                View listing
+                <ChevronRight className="size-4 text-muted-foreground" />
+              </Link>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-11 w-full justify-between rounded-[5px] text-sm font-semibold text-zinc-700 shadow-none hover:bg-zinc-100"
+              asChild
+            >
+              <Link href={`/order/confirmation?listingId=${b.listingId}`}>
+                View booking
+                <ChevronRight className="size-4 text-muted-foreground" />
+              </Link>
+            </Button>
+          </div>
 
-        <Separator />
-
-        {/* Actions */}
-        <div className="space-y-2.5">
-          <Button
-            variant="outline"
-            className="w-full justify-between text-sm font-medium"
-            asChild
-          >
-            <Link href={`/listing/${booking.listingId}`}>
-              View listing
-              <ChevronRight className="size-4 text-zinc-400" />
-            </Link>
-          </Button>
-          <Button
-            variant="outline"
-            className="w-full justify-between text-sm font-medium"
-            asChild
-          >
-            <Link href={`/order/confirmation?listingId=${booking.listingId}`}>
-              View booking
-              <ChevronRight className="size-4 text-zinc-400" />
-            </Link>
-          </Button>
         </div>
       </div>
     </aside>
@@ -574,25 +701,20 @@ export function MessagesClient() {
   return (
     <div className="w-full px-4 sm:px-6">
       <div className="flex h-[calc(100vh-4rem)] w-full">
-        {/* Left: Thread list - aligns with header logo */}
         <ThreadList
           threads={MOCK_THREADS}
           activeId={activeId}
           onSelect={setActiveId}
         />
 
-        {/* Middle: Conversation */}
         {activeThread ? (
           <ConversationPanel thread={activeThread} messages={messages} />
         ) : (
           <div className="flex min-w-0 flex-1 items-center justify-center">
-            <p className="text-sm text-muted-foreground">
-              Select a conversation to start messaging.
-            </p>
+            <p className="text-sm text-muted-foreground">Select a conversation to start messaging.</p>
           </div>
         )}
 
-        {/* Right: Booking details - aligns with header hamburger */}
         {activeThread && <BookingDetailPanel thread={activeThread} />}
       </div>
     </div>
