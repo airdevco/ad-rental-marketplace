@@ -147,7 +147,7 @@ export function Header() {
                     <Link href="/search" onClick={() => setMenuOpen(false)}>Browse homes</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard/seller" onClick={() => setMenuOpen(false)}>List your property</Link>
+                    <Link href="/become-a-host" onClick={() => setMenuOpen(false)}>Become a host</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="-mx-2 my-1 h-px" />
                   <div className="px-0 py-3">
