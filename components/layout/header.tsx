@@ -24,7 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { HeaderSearchBar } from "@/components/landing/header-search-bar";
 
 const SCROLL_THRESHOLD = 280;
@@ -47,6 +47,11 @@ export function Header() {
   const [saveExitOpen, setSaveExitOpen] = useState(false);
   const isBecomeAHostPage = pathname?.startsWith("/become-a-host");
   const isDashboardPage = pathname?.startsWith("/dashboard");
+  const isAdminPage = pathname?.startsWith("/admin");
+  const isCheckoutOrConfirmation =
+    pathname === "/checkout" || pathname?.startsWith("/order/confirmation");
+  const isProfilePage = pathname?.startsWith("/profile");
+  const showLoggedInHeader = isLoggedIn || isCheckoutOrConfirmation || isMessagesPage || isProfilePage || isAdminPage;
 
   useEffect(() => {
     function onScroll() {
@@ -74,7 +79,7 @@ export function Header() {
         className={cn(
           "relative flex h-16 w-full items-center gap-4",
           !hideLogoForSearch && "justify-between",
-          isFullWidthPage ? "max-w-none px-4 sm:px-6" : "container max-w-[1400px] px-4"
+          isAdminPage ? "max-w-none pl-4 pr-4 md:pl-6 md:pr-14 lg:pr-24" : isFullWidthPage ? "max-w-none px-4 sm:px-6" : "container max-w-[1400px] px-4"
         )}
       >
         {!hideLogoForSearch && (
@@ -144,6 +149,33 @@ export function Header() {
                 </DialogContent>
               </Dialog>
             </>
+          ) : showLoggedInHeader ? (
+            <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="flex shrink-0 rounded-full focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  aria-label="Account menu"
+                >
+                  <Avatar className="size-8">
+                    <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=96&h=96&fit=crop&crop=face" alt="Account" />
+                    <AvatarFallback className="bg-zinc-700 text-xs font-medium text-white">U</AvatarFallback>
+                  </Avatar>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 min-w-48 rounded-lg border-zinc-100 p-2 shadow-lg">
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard/buyer" onClick={() => setMenuOpen(false)}>My dashboard</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/become-a-host" onClick={() => setMenuOpen(false)}>Become a host</Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="-mx-1 my-1 h-px bg-zinc-100" />
+                <DropdownMenuItem asChild>
+                  <Link href="/" onClick={() => setMenuOpen(false)}>Log out</Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
           <>
           {isLoggedIn && (
@@ -175,7 +207,7 @@ export function Header() {
                 )}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 min-w-56 p-2">
+            <DropdownMenuContent align="end" className="w-48 min-w-48 rounded-lg border-zinc-100 p-2 shadow-lg">
               {isLoggedIn ? (
                 <>
                   <DropdownMenuItem asChild>
@@ -187,7 +219,7 @@ export function Header() {
                   <DropdownMenuItem asChild>
                     <Link href="/messages" onClick={() => setMenuOpen(false)}>Messages</Link>
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator className="-mx-2 my-1 h-px" />
+                  <DropdownMenuSeparator className="-mx-1 my-1 h-px bg-zinc-100" />
                   <DropdownMenuItem asChild>
                     <Link href="/login" onClick={() => setMenuOpen(false)}>Sign out</Link>
                   </DropdownMenuItem>
@@ -200,9 +232,9 @@ export function Header() {
                   <DropdownMenuItem asChild>
                     <Link href="/become-a-host" onClick={() => setMenuOpen(false)}>Become a host</Link>
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator className="-mx-2 my-1 h-px" />
+                  <DropdownMenuSeparator className="-mx-1 my-1 h-px bg-zinc-100" />
                   <div className="px-0 py-3">
-                    <Button asChild size="sm" className="w-full rounded-md bg-[#156EF5] px-4 py-2.5 hover:bg-[#125bd4]">
+                    <Button asChild size="sm" className="w-full rounded-[5px] bg-primary px-4 py-2 font-medium shadow-none hover:bg-primary/90">
                       <Link href="/login" onClick={() => setMenuOpen(false)}>Log in or Sign up</Link>
                     </Button>
                   </div>

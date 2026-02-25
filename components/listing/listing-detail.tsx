@@ -71,6 +71,7 @@ import {
 } from "@/lib/vehicle-listings";
 import type { VehicleListing } from "@/lib/vehicle-listings";
 import { useListingScroll } from "@/lib/listing-scroll-context";
+import { cn } from "@/lib/utils";
 
 const SECTION_TABS = [
   { id: "photos", label: "Photos" },
@@ -119,7 +120,8 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
   }, []);
   const [activeSection, setActiveSection] = useState<string>("photos");
   const [lineStyle, setLineStyle] = useState<{ left: number; width: number }>({ left: 0, width: 0 });
-  const [copied, setCopied] = useState(false);
+  const [copiedDesktop, setCopiedDesktop] = useState(false);
+  const [copiedMobile, setCopiedMobile] = useState(false);
   const [wishlisted, setWishlisted] = useState(false);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [bookingSheetOpen, setBookingSheetOpen] = useState(false);
@@ -232,11 +234,16 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
     }, 800);
   };
 
-  const handleShare = () => {
+  const handleShare = (source: "desktop" | "mobile") => {
     const url = typeof window !== "undefined" ? window.location.href : "";
     navigator.clipboard.writeText(url).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      if (source === "desktop") {
+        setCopiedDesktop(true);
+        setTimeout(() => setCopiedDesktop(false), 2000);
+      } else {
+        setCopiedMobile(true);
+        setTimeout(() => setCopiedMobile(false), 2000);
+      }
     });
   };
 
@@ -370,12 +377,12 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
               />
               <span className="hidden md:inline">Wishlist</span>
             </Button>
-            <Popover open={copied} onOpenChange={() => {}}>
+            <Popover open={copiedDesktop} onOpenChange={() => {}}>
               <PopoverAnchor asChild>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={handleShare}
+                  onClick={() => handleShare("desktop")}
                   className="h-9 shrink-0 rounded-full border-zinc-200 px-2 shadow-none md:px-3 md:py-2"
                   aria-label="Share"
                 >
@@ -413,12 +420,12 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
             />
             <span className="sr-only">Wishlist</span>
           </Button>
-          <Popover open={copied} onOpenChange={() => {}}>
+          <Popover open={copiedMobile} onOpenChange={() => {}}>
             <PopoverAnchor asChild>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handleShare}
+                onClick={() => handleShare("mobile")}
                 className="h-9 shrink-0 rounded-full border-zinc-200 px-2 shadow-none"
                 aria-label="Share"
               >
@@ -447,7 +454,7 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
             <div className="flex min-w-0 flex-1 items-start gap-3 sm:gap-4">
               <Link
-                href={listing.hostId ? `/user/${listing.hostId}` : "#"}
+                href="/profile/seller-1"
                 className="flex size-11 shrink-0 sm:size-[45px] focus-visible:rounded-full focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Avatar className="size-11 sm:size-[45px]">
@@ -749,8 +756,13 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
 
         </div>
 
-        {/* Right column - sticky sidebar (hidden on small viewports) */}
-        <div className="hidden lg:block sticky top-20 self-start pt-6 lg:pt-6">
+        {/* Right column - sticky sidebar (hidden on small viewports); sticks below header or section tabs */}
+        <div
+          className={cn(
+            "hidden lg:block sticky self-start pt-6 lg:pt-6",
+            pastGallery ? "top-14" : "top-16"
+          )}
+        >
           <Card>
             <CardContent className="p-0">
               {/* Pricing - show total for x nights when dates selected (price bold/underlined, duration lighter) */}

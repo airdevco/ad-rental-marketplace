@@ -92,7 +92,7 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
             role={step !== 1 ? "button" : undefined}
           >
             <div>
-              <h2 className="text-lg font-semibold text-zinc-900">1. Choose how to pay</h2>
+              <h2 className="text-lg font-semibold text-zinc-900">1. Payment plan</h2>
               {step > 1 && (
                 <p className="mt-0.5 text-sm text-muted-foreground">
                   {bookingRate === "non-refundable" ? "Non-refundable" : "Refundable"}
@@ -108,7 +108,7 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
           {step === 1 && (
             <div className="pb-4">
               <div className="space-y-3 pt-1">
-                <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-zinc-200 bg-white p-4 transition-colors hover:bg-zinc-50 has-[:checked]:border-primary has-[:checked]:ring-2 has-[:checked]:ring-primary/20">
+                <label className="flex cursor-pointer items-start gap-3 rounded-[5px] border border-zinc-200 bg-white p-4 transition-colors hover:bg-zinc-50 has-[:checked]:border-primary has-[:checked]:ring-2 has-[:checked]:ring-primary/20">
                   <input
                     type="radio"
                     name="booking-rate"
@@ -119,13 +119,13 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
                   />
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-zinc-900">Non-refundable</p>
-                    <p className="text-lg font-semibold tabular-nums">$826.96/mo</p>
+                    <p className="text-lg font-semibold tabular-nums text-zinc-900">$826.96</p>
                     <p className="mt-1 text-sm text-muted-foreground">
                       Pay the full amount now. No refunds or changes.
                     </p>
                   </div>
                 </label>
-                <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-zinc-200 bg-white p-4 transition-colors hover:bg-zinc-50 has-[:checked]:border-primary has-[:checked]:ring-2 has-[:checked]:ring-primary/20">
+                <label className="flex cursor-pointer items-start gap-3 rounded-[5px] border border-zinc-200 bg-white p-4 transition-colors hover:bg-zinc-50 has-[:checked]:border-primary has-[:checked]:ring-2 has-[:checked]:ring-primary/20">
                   <input
                     type="radio"
                     name="booking-rate"
@@ -136,9 +136,9 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
                   />
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-zinc-900">Refundable</p>
-                    <p className="text-lg font-semibold tabular-nums">$1,010.72/mo</p>
+                    <p className="text-lg font-semibold tabular-nums text-zinc-900">$1,010.72</p>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      Cancel for free up to 24 hours before. $0 due now.
+                      Free cancellation up to 24 hours before check-in. Pay at check-in.
                     </p>
                   </div>
                 </label>
@@ -147,7 +147,7 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
                 <Button
                   type="button"
                   size="sm"
-                  className="min-w-[88px]"
+                  className="h-9 min-w-[88px] rounded-[5px] font-medium shadow-none"
                   onClick={() => {
                     if (!isLoggedIn) {
                       setAuthOpen(true);
@@ -163,7 +163,7 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
           )}
         </section>
 
-        <div className="border-t border-zinc-200" />
+        <div className="border-t border-zinc-100" />
 
         {/* Step 2: Details */}
         <section>
@@ -173,7 +173,7 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
             role={step !== 2 ? "button" : undefined}
           >
             <div>
-              <h2 className="text-lg font-semibold text-zinc-900">2. Driver details</h2>
+              <h2 className="text-lg font-semibold text-zinc-900">2. Guest details</h2>
               {step > 2 && (
                 <p className="mt-0.5 text-sm text-muted-foreground">
                   {detailsSummary}
@@ -189,7 +189,7 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
           {step === 2 && (
             <div className="pb-4">
               <div className="space-y-4 pt-1">
-                <div className="grid gap-4 grid-cols-1 sm:grid-cols-[1fr_1fr_auto]">
+                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
                   <div className="space-y-2 min-w-0">
                     <Label htmlFor="checkout-first" className="text-xs font-semibold text-zinc-900">First name</Label>
                     <Input
@@ -197,7 +197,7 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
                       value={details.firstName}
                       onChange={(e) => setDetails((d) => ({ ...d, firstName: e.target.value }))}
                       placeholder="First name"
-                      className="h-10 w-full"
+                      className="h-9 w-full rounded-[5px] border-zinc-200 shadow-none focus-visible:border-zinc-900 focus-visible:ring-0"
                       required
                     />
                   </div>
@@ -208,27 +208,9 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
                       value={details.lastName}
                       onChange={(e) => setDetails((d) => ({ ...d, lastName: e.target.value }))}
                       placeholder="Last name"
-                      className="h-10 w-full"
+                      className="h-9 w-full rounded-[5px] border-zinc-200 shadow-none focus-visible:border-zinc-900 focus-visible:ring-0"
                       required
                     />
-                  </div>
-                  <div className="space-y-2 min-w-[5rem] shrink-0">
-                    <Label htmlFor="checkout-age" className="text-xs font-semibold text-zinc-900">Age</Label>
-                    <Select
-                      value={details.age}
-                      onValueChange={(v) => setDetails((d) => ({ ...d, age: v }))}
-                    >
-                      <SelectTrigger id="checkout-age" className="h-10 w-full min-w-0">
-                        <SelectValue placeholder="Age" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.from({ length: 53 }, (_, i) => 18 + i).map((age) => (
-                          <SelectItem key={age} value={String(age)}>
-                            {age}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -239,7 +221,7 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
                     value={details.email}
                     onChange={(e) => setDetails((d) => ({ ...d, email: e.target.value }))}
                     placeholder="Email"
-                    className="h-10"
+                    className="h-9 rounded-[5px] border-zinc-200 shadow-none focus-visible:border-zinc-900 focus-visible:ring-0"
                     required
                   />
                 </div>
@@ -250,7 +232,7 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
                       value={details.phoneCountry}
                       onValueChange={(v) => setDetails((d) => ({ ...d, phoneCountry: v }))}
                     >
-                      <SelectTrigger id="checkout-country" className="h-10 w-full">
+                      <SelectTrigger id="checkout-country" className="h-9 w-full rounded-[5px] border-zinc-200 shadow-none">
                         <SelectValue placeholder="Country" />
                       </SelectTrigger>
                       <SelectContent>
@@ -270,14 +252,14 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
                         setDetails((d) => ({ ...d, phoneNumber: formatPhoneNumber(e.target.value) }))
                       }
                       placeholder="555-555-5555"
-                      className="h-10 w-full"
+                      className="h-9 w-full rounded-[5px] border-zinc-200 shadow-none focus-visible:border-zinc-900 focus-visible:ring-0"
                       required
                     />
                   </div>
                 </div>
               </div>
               <div className="mt-4 flex justify-end">
-                <Button type="button" size="sm" className="min-w-[88px]" onClick={() => setStep(3)}>
+                <Button type="button" size="sm" className="h-9 min-w-[88px] rounded-[5px] font-medium shadow-none" onClick={() => setStep(3)}>
                   Next
                 </Button>
               </div>
@@ -285,7 +267,7 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
           )}
         </section>
 
-        <div className="border-t border-zinc-200" />
+        <div className="border-t border-zinc-100" />
 
         {/* Step 3: Payment method */}
         <section>
@@ -311,7 +293,7 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
                     type="text"
                     autoComplete="cc-number"
                     placeholder="1234 1234 1234 1234"
-                    className="h-10"
+                    className="h-9 rounded-[5px] border-zinc-200 shadow-none focus-visible:border-zinc-900 focus-visible:ring-0"
                   />
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -323,7 +305,7 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
                       type="text"
                       autoComplete="cc-exp"
                       placeholder="MM/YY"
-                      className="h-10"
+                      className="h-9 rounded-[5px] border-zinc-200 shadow-none focus-visible:border-zinc-900 focus-visible:ring-0"
                     />
                   </div>
                   <div className="space-y-2">
@@ -334,14 +316,14 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
                       type="text"
                       autoComplete="cc-csc"
                       placeholder="CVC"
-                      className="h-10"
+                      className="h-9 rounded-[5px] border-zinc-200 shadow-none focus-visible:border-zinc-900 focus-visible:ring-0"
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="checkout-country-pay" className="text-xs font-semibold text-zinc-900">Country</Label>
                   <Select defaultValue="us">
-                    <SelectTrigger id="checkout-country-pay" className="h-10 w-full">
+                    <SelectTrigger id="checkout-country-pay" className="h-9 w-full rounded-[5px] border-zinc-200 shadow-none">
                       <SelectValue placeholder="Country" />
                     </SelectTrigger>
                     <SelectContent>
@@ -359,7 +341,7 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
                     type="text"
                     autoComplete="postal-code"
                     placeholder="12345"
-                    className="h-10"
+                    className="h-9 rounded-[5px] border-zinc-200 shadow-none focus-visible:border-zinc-900 focus-visible:ring-0"
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -368,8 +350,8 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
                 </p>
               </div>
 
-              <Button type="submit" size="lg" className="mt-6 h-12 w-full">
-                Book trip
+              <Button type="submit" size="lg" className="mt-6 h-11 w-full rounded-[5px] font-medium shadow-none">
+                Reserve
               </Button>
             </div>
           )}

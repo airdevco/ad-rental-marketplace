@@ -10,8 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { DateRangePickerContent } from "@/components/landing/date-range-picker";
-import { TimePicker } from "@/components/ui/time-picker";
-import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
+import { GuestPicker, guestSummary, type Guests, DEFAULT_GUESTS } from "@/components/landing/guest-picker";
+import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 type ListingSummary = {
   id: string;
@@ -28,20 +28,21 @@ type CheckoutSummaryCardProps = {
 };
 
 function getDefaultDateRange(): DateRange {
-  const from = addDays(startOfDay(new Date()), 7);
-  const to = addDays(from, 2);
+  const from = startOfDay(new Date(new Date().getFullYear(), 2, 3)); // Mar 3
+  const to = addDays(from, 2); // Mar 5
   return { from, to };
 }
 
-const DEFAULT_START_TIME = "10:00 AM";
-const DEFAULT_END_TIME = "12:00 PM";
+function getDefaultGuests(): Guests {
+  return { ...DEFAULT_GUESTS, adults: 2 };
+}
 
 export function CheckoutSummaryCard({ listing, listingId }: CheckoutSummaryCardProps) {
   const [dateRange, setDateRange] = useState<DateRange | undefined>(getDefaultDateRange);
-  const [tripStartTime, setTripStartTime] = useState(DEFAULT_START_TIME);
-  const [tripEndTime, setTripEndTime] = useState(DEFAULT_END_TIME);
+  const [guests, setGuests] = useState<Guests>(getDefaultGuests);
   const [datesExpanded, setDatesExpanded] = useState(false);
   const [datesAnchor, setDatesAnchor] = useState<"start" | "end" | null>(null);
+  const [guestsOpen, setGuestsOpen] = useState(false);
 
   const from = dateRange?.from;
   const to = dateRange?.to;
@@ -50,23 +51,25 @@ export function CheckoutSummaryCard({ listing, listingId }: CheckoutSummaryCardP
   const taxes = Math.round(subtotal * 0.2);
   const total = subtotal + taxes;
 
-  const datesLabel = useMemo(() => {
+  const datesAndGuestsLabel = useMemo(() => {
     if (!from) return "Select dates";
-    const startStr = `${format(from, "MMM d")}, ${tripStartTime}`;
-    if (!to) return startStr;
-    const endDateStr =
-      from.getMonth() === to.getMonth() && from.getFullYear() === to.getFullYear()
+    const startStr = format(from, "MMM d");
+    const endStr = to
+      ? from.getMonth() === to.getMonth() && from.getFullYear() === to.getFullYear()
         ? format(to, "d")
-        : format(to, "MMM d");
-    return `${startStr} – ${endDateStr}, ${tripEndTime}`;
-  }, [from, to, tripStartTime, tripEndTime]);
+        : format(to, "MMM d")
+      : "";
+    const range = to ? `${startStr}-${endStr}` : startStr;
+    const guestStr = guestSummary(guests) || "0 guests";
+    return `${range} · ${guestStr}`;
+  }, [from, to, guests]);
 
   if (!listing) {
     return (
       <Card className="overflow-hidden">
         <CardContent className="p-6">
           <p className="text-sm text-muted-foreground">
-            Select a rental from the search or a listing page to see the summary here.
+            Select a listing from search or a listing page to see the summary here.
           </p>
           <Link
             href="/search"
@@ -82,152 +85,166 @@ export function CheckoutSummaryCard({ listing, listingId }: CheckoutSummaryCardP
   return (
     <Card className="overflow-hidden">
       <CardContent className="p-0">
-        {/* Property info - match reference: image + title, then star rating (count) */}
-        <div className="flex gap-4 p-5">
-          <div className="relative h-20 w-28 shrink-0 overflow-hidden rounded-lg bg-zinc-100">
+        {/* Image: same width as content below, rounded corners, not edge-to-edge */}
+        <div className="px-5 pt-3">
+          <div className="relative aspect-[2/1] w-full overflow-hidden rounded-xl bg-zinc-100">
             <Image
               src={listing.imageUrl}
               alt={listing.title}
               fill
               className="object-cover"
-              sizes="112px"
+              sizes="(min-width: 400px) 400px, 100vw"
             />
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="font-semibold text-zinc-900 leading-snug">{listing.title}</p>
-            <p className="mt-1.5 flex items-center gap-1.5 text-sm text-zinc-700">
-              <Star className="size-4 shrink-0 fill-amber-400 text-amber-400" aria-hidden />
-              <span className="font-medium tabular-nums">{listing.rating.toFixed(2)}</span>
-              <span className="text-muted-foreground">({listing.reviewCount})</span>
-            </p>
-          </div>
+        </div>
+        {/* Title, rating and reviews beneath */}
+        <div className="px-5 py-4">
+          <p className="font-semibold text-zinc-900 leading-snug">{listing.title}</p>
+          <p className="mt-1.5 flex items-center gap-1.5 text-sm text-muted-foreground">
+            <Star className="size-4 shrink-0 fill-zinc-900 text-zinc-900" aria-hidden />
+            <span className="font-medium tabular-nums text-zinc-900">{listing.rating.toFixed(2)}</span>
+            <span>· {listing.reviewCount} reviews</span>
+          </p>
         </div>
 
-        <Separator />
+        <Separator className="bg-zinc-100" />
 
         {/* Free cancellation */}
         <div className="px-5 py-3">
           <p className="font-semibold text-zinc-900">Free cancellation</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Cancel before pickup for a full refund.
+            Cancel before check-in for a full refund.
           </p>
         </div>
 
-        <Separator />
+        <Separator className="bg-zinc-100" />
 
-        {/* Dates - header row with Change on right, expandable Trip start/end UI */}
-        <div className="px-5 py-3">
+        {/* Dates & guests - default: Mar 12 – 16 · # guests + Change; edit: listing-style inputs */}
+        <div className="relative px-5 py-3">
           <div className="flex items-center justify-between gap-2">
-            <p className="font-semibold text-zinc-900">Dates</p>
+            <p className="font-semibold text-zinc-900">Dates &amp; guests</p>
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => setDatesExpanded((v) => !v)}
+              className="h-9 rounded-[5px] border-zinc-200 font-medium shadow-none hover:bg-zinc-100"
             >
               {datesExpanded ? "Done" : "Change"}
             </Button>
           </div>
           {datesExpanded ? (
             <div className="mt-3 space-y-3">
-              <div>
-                <p className="text-sm font-medium">Trip start</p>
-                <div className="mt-1.5 flex gap-2">
-                  <Popover
-                    open={datesAnchor === "start"}
-                    onOpenChange={(open) => setDatesAnchor(open ? "start" : null)}
-                  >
-                    <PopoverAnchor asChild>
-                      <button
-                        type="button"
-                        onClick={() => setDatesAnchor("start")}
-                        className="flex h-9 min-w-0 flex-1 items-center justify-between gap-1 rounded-md border border-input bg-transparent px-3 py-2 text-left text-sm shadow-xs"
-                      >
-                        <span className={from ? "text-foreground" : "text-muted-foreground"}>
-                          {from ? format(from, "MMM d, yyyy") : "Select date"}
-                        </span>
-                        <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
-                      </button>
-                    </PopoverAnchor>
-                    <PopoverContent side="bottom" align="end" className="w-auto p-0">
-                      <DateRangePickerContent
-                        value={dateRange}
-                        onChange={setDateRange}
-                        onClose={() => setDatesAnchor(null)}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <TimePicker
-                    value={tripStartTime}
-                    onChange={setTripStartTime}
-                    placeholder="10:00 AM"
-                    showIcon={false}
-                    triggerClassName="h-9 w-24 rounded-md border border-input bg-transparent px-3"
-                  />
+              {/* Check-in | Check-out - vertical divider touches top/bottom section dividers */}
+              <div className="relative flex">
+                <div className="min-w-0 flex-1 pr-4">
+                  <p className="text-xs font-semibold text-zinc-900">Check-in</p>
+                  <div className="mt-1.5">
+                    <Popover
+                      open={datesAnchor === "start"}
+                      onOpenChange={(open) => setDatesAnchor(open ? "start" : null)}
+                    >
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className="flex h-9 w-full items-center justify-between gap-1 rounded-[5px] border border-zinc-200 bg-white px-3 py-2 text-left text-sm"
+                        >
+                          <span className={from ? "text-foreground" : "text-muted-foreground"}>
+                            {from ? format(from, "MMM d, yyyy") : "Select date"}
+                          </span>
+                          <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent side="bottom" align="end" className="w-auto p-0">
+                        <DateRangePickerContent
+                          value={dateRange}
+                          onChange={setDateRange}
+                          onClose={() => setDatesAnchor(null)}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+                <div className="absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2 bg-zinc-100" aria-hidden />
+                <div className="min-w-0 flex-1 pl-4">
+                  <p className="text-xs font-semibold text-zinc-900">Check-out</p>
+                  <div className="mt-1.5">
+                    <Popover
+                      open={datesAnchor === "end"}
+                      onOpenChange={(open) => setDatesAnchor(open ? "end" : null)}
+                    >
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className="flex h-9 w-full items-center justify-between gap-1 rounded-[5px] border border-zinc-200 bg-white px-3 py-2 text-left text-sm"
+                        >
+                          <span className={to ? "text-foreground" : "text-muted-foreground"}>
+                            {to ? format(to, "MMM d, yyyy") : "Select date"}
+                          </span>
+                          <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent side="bottom" align="end" className="w-auto p-0">
+                        <DateRangePickerContent
+                          value={dateRange}
+                          onChange={setDateRange}
+                          onClose={() => setDatesAnchor(null)}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
                 </div>
               </div>
+              {/* Guests - same as listing */}
               <div>
-                <p className="text-sm font-medium">Trip end</p>
-                <div className="mt-1.5 flex gap-2">
-                  <Popover
-                    open={datesAnchor === "end"}
-                    onOpenChange={(open) => setDatesAnchor(open ? "end" : null)}
-                  >
+                <p className="text-xs font-semibold text-zinc-900">Guests</p>
+                <div className="mt-1.5">
+                  <Popover open={guestsOpen} onOpenChange={setGuestsOpen}>
                     <PopoverAnchor asChild>
                       <button
                         type="button"
-                        onClick={() => setDatesAnchor("end")}
-                        className="flex h-9 min-w-0 flex-1 items-center justify-between gap-1 rounded-md border border-input bg-transparent px-3 py-2 text-left text-sm shadow-xs"
+                        onClick={() => setGuestsOpen(true)}
+                        className="flex h-9 w-full items-center justify-between rounded-[5px] border border-zinc-200 bg-white px-3 text-left text-sm"
+                        aria-label="Select guests"
                       >
-                        <span className={to ? "text-foreground" : "text-muted-foreground"}>
-                          {to ? format(to, "MMM d, yyyy") : "Select date"}
+                        <span className={guestSummary(guests) ? "text-foreground" : "text-muted-foreground"}>
+                          {guestSummary(guests) || "Add guests"}
                         </span>
                         <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
                       </button>
                     </PopoverAnchor>
-                    <PopoverContent side="bottom" align="end" className="w-auto p-0">
-                      <DateRangePickerContent
-                        value={dateRange}
-                        onChange={setDateRange}
-                        onClose={() => setDatesAnchor(null)}
-                      />
+                    <PopoverContent side="bottom" align="start" className="w-auto p-0">
+                      <GuestPicker value={guests} onChange={setGuests} />
                     </PopoverContent>
                   </Popover>
-                  <TimePicker
-                    value={tripEndTime}
-                    onChange={setTripEndTime}
-                    placeholder="10:00 AM"
-                    showIcon={false}
-                    triggerClassName="h-9 w-24 rounded-md border border-input bg-transparent px-3"
-                  />
                 </div>
               </div>
             </div>
           ) : (
-            <p className="mt-1 text-sm text-muted-foreground">{datesLabel}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{datesAndGuestsLabel}</p>
           )}
         </div>
 
-        <Separator />
+        <Separator className="bg-zinc-100" />
 
         {/* Price details */}
         <div className="px-5 py-3 space-y-2">
           <p className="font-semibold text-zinc-900">Price details</p>
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">
-              {days} {days === 1 ? "day" : "days"} × ${listing.pricePerDay.toFixed(2)}
+              {days} {days === 1 ? "night" : "nights"} × ${listing.pricePerDay.toFixed(2)}
             </span>
-            <span className="tabular-nums font-medium">${subtotal.toLocaleString()}</span>
+            <span className="tabular-nums font-medium text-zinc-900">${subtotal.toLocaleString()}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Taxes</span>
-            <span className="tabular-nums font-medium">${taxes.toLocaleString()}</span>
+            <span className="tabular-nums font-medium text-zinc-900">${taxes.toLocaleString()}</span>
           </div>
         </div>
 
-        <Separator />
+        <Separator className="bg-zinc-100" />
 
-        {/* Total USD + Price breakdown link */}
+        {/* Total */}
         <div className="px-5 py-3">
           <div className="flex items-center justify-between gap-2">
             <p className="font-semibold text-zinc-900">

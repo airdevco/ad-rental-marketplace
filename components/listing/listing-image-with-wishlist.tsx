@@ -13,6 +13,10 @@ type ListingImageWithWishlistProps = {
   className?: string;
   /** When false, the wishlist heart is hidden (e.g. dashboard). */
   showWishlist?: boolean;
+  /** Initial wishlisted state (defaults to false). */
+  defaultWishlisted?: boolean;
+  /** Called when the wishlist state changes. */
+  onWishlistChange?: (wishlisted: boolean) => void;
   /** Optional overlay on the image (e.g. status badge). Rendered top-left when provided. */
   topOverlay?: React.ReactNode;
 };
@@ -25,6 +29,8 @@ export function ListingImageWithWishlist({
   sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw",
   className,
   showWishlist = true,
+  defaultWishlisted = false,
+  onWishlistChange,
   topOverlay,
 }: ListingImageWithWishlistProps) {
   const len = images.length;
@@ -33,7 +39,7 @@ export function ListingImageWithWishlist({
   // Internal index for seamless loop: 0 = clone of last, 1..len = real, len+1 = clone of first
   const [internalIndex, setInternalIndex] = useState(1);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isWishlisted, setIsWishlisted] = useState(defaultWishlisted);
   const displayIndex = internalIndex === 0 ? len - 1 : internalIndex === len + 1 ? 0 : internalIndex - 1;
 
   function goNext(e: React.MouseEvent) {
@@ -71,7 +77,11 @@ export function ListingImageWithWishlist({
   function handleWishlistClick(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
-    setIsWishlisted((prev) => !prev);
+    setIsWishlisted((prev) => {
+      const next = !prev;
+      onWishlistChange?.(next);
+      return next;
+    });
   }
 
   const loopedSlides = hasMultiple

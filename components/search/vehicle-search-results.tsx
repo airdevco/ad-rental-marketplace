@@ -10,7 +10,6 @@ import type { VehicleCategory } from "@/lib/vehicle-listings";
 export function VehicleSearchResults() {
   const [priceRange] = useQueryState("price", { defaultValue: "" });
   const [seatsMin] = useQueryState("seats", { defaultValue: "" });
-  const [fuelType] = useQueryState("fuel", { defaultValue: "" });
   const [minPrice] = useQueryState("minPrice", { defaultValue: "" });
   const [maxPrice] = useQueryState("maxPrice", { defaultValue: "" });
   const [categories] = useQueryState("categories", { defaultValue: "" });
@@ -27,7 +26,6 @@ export function VehicleSearchResults() {
       minPrice: minPrice || undefined,
       maxPrice: maxPrice || undefined,
       seatsMin: seatsMin || undefined,
-      fuelType: fuelType || undefined,
       categories: categoryList,
       sort: sort || undefined,
     });
@@ -38,7 +36,6 @@ export function VehicleSearchResults() {
     minPrice,
     maxPrice,
     seatsMin,
-    fuelType,
     categories,
     sort,
   ]);

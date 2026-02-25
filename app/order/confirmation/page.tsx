@@ -16,7 +16,7 @@ type Props = { searchParams: Promise<{ rentalId?: string; listingId?: string }> 
 
 export const metadata = {
   title: "Booking confirmed",
-  description: "Your rental booking has been confirmed",
+  description: "Your stay has been confirmed",
 };
 
 export default async function OrderConfirmationPage({ searchParams }: Props) {
@@ -71,12 +71,12 @@ export default async function OrderConfirmationPage({ searchParams }: Props) {
           <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-primary/10 text-primary">
             <Check className="size-8" strokeWidth={2.5} aria-hidden />
           </div>
-          <h1 className="text-2xl font-bold text-zinc-900">Booking confirmed</h1>
-          <p className="mt-2 text-muted-foreground">
-            Your rental has been reserved. You&apos;ll receive a confirmation
+          <h1 className="text-2xl font-black tracking-tight text-zinc-900">Booking confirmed</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Your stay has been reserved. You&apos;ll receive a confirmation
             email shortly.
           </p>
-          <p className="mt-4 text-sm font-mono font-medium tabular-nums text-zinc-600">
+          <p className="mt-4 text-sm font-medium tabular-nums text-muted-foreground">
             Order reference: ORD-00001
           </p>
         </div>
@@ -84,10 +84,10 @@ export default async function OrderConfirmationPage({ searchParams }: Props) {
         {listing ? (
           <>
             {/* Listing info */}
-            <Card>
+            <Card className="border-zinc-100 shadow-none">
               <CardContent className="p-0">
                 <div className="flex gap-4 p-4">
-                  <div className="relative h-24 w-32 shrink-0 overflow-hidden rounded-lg bg-zinc-100">
+                  <div className="relative h-24 w-32 shrink-0 overflow-hidden rounded-xl bg-zinc-100">
                     <Image
                       src={listing.imageUrl}
                       alt={listing.title}
@@ -115,12 +115,12 @@ export default async function OrderConfirmationPage({ searchParams }: Props) {
             {mapUrl && (
               <div className="mt-6">
                 <h3 className="mb-3 text-lg font-semibold text-zinc-900">
-                  Pickup location
+                  Where you&apos;ll stay
                 </h3>
-                <div className="overflow-hidden rounded-lg border bg-zinc-100">
+                <div className="overflow-hidden rounded-xl border border-zinc-100 bg-zinc-100">
                   <div className="relative aspect-[21/9] w-full">
                     <iframe
-                      title="Pickup location map"
+                      title="Property location map"
                       src={mapUrl}
                       className="absolute inset-0 h-full w-full border-0"
                       allowFullScreen
@@ -128,8 +128,8 @@ export default async function OrderConfirmationPage({ searchParams }: Props) {
                       referrerPolicy="no-referrer-when-downgrade"
                     />
                   </div>
-                  <p className="flex items-center gap-2 p-3 text-sm font-medium text-zinc-700">
-                    <MapPin className="size-4 shrink-0 text-zinc-500" />
+                  <p className="flex items-center gap-2 p-3 text-sm font-medium text-muted-foreground">
+                    <MapPin className="size-4 shrink-0" aria-hidden />
                     {pickupAddress}
                   </p>
                 </div>
@@ -141,24 +141,24 @@ export default async function OrderConfirmationPage({ searchParams }: Props) {
               <h3 className="mb-3 text-lg font-semibold text-zinc-900">
                 Booking details
               </h3>
-              <Card>
+              <Card className="border-zinc-100 shadow-none">
                 <CardContent className="space-y-3 p-4">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">
-                      {days} days × ${listing.pricePerDay}/day
+                      {days} nights × ${listing.pricePerDay}/night
                     </span>
-                    <span className="tabular-nums font-medium">
+                    <span className="tabular-nums font-medium text-zinc-900">
                       ${subtotal.toLocaleString()}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Taxes</span>
-                    <span className="tabular-nums font-medium">
+                    <span className="tabular-nums font-medium text-zinc-900">
                       ${taxes.toLocaleString()}
                     </span>
                   </div>
-                  <Separator />
-                  <div className="flex justify-between font-semibold">
+                  <Separator className="bg-zinc-100" />
+                  <div className="flex justify-between font-semibold text-zinc-900">
                     <span>Total</span>
                     <span className="tabular-nums">${total.toLocaleString()}</span>
                   </div>
@@ -167,10 +167,10 @@ export default async function OrderConfirmationPage({ searchParams }: Props) {
             </div>
           </>
         ) : (
-          <Card>
+          <Card className="border-zinc-100 shadow-none">
             <CardContent className="p-6 text-center">
               <p className="text-sm text-muted-foreground">
-                Booking confirmed. View your rentals to see details.
+                Booking confirmed. View your trips to see details.
               </p>
             </CardContent>
           </Card>
@@ -178,11 +178,11 @@ export default async function OrderConfirmationPage({ searchParams }: Props) {
 
         {/* Actions */}
         <div className="mt-10 flex flex-col gap-3">
-          <Button asChild className="min-h-[44px]">
-            <Link href="/dashboard/buyer">View my rentals</Link>
+          <Button asChild className="h-11 rounded-[5px] font-medium shadow-none">
+            <Link href="/dashboard/buyer">View my bookings</Link>
           </Button>
           {listing && (
-            <Button variant="outline" asChild className="min-h-[44px]">
+            <Button variant="outline" asChild className="h-11 rounded-[5px] border-zinc-200 font-medium shadow-none hover:bg-zinc-100">
               <Link href={`/listing/${listing.id}`}>View listing</Link>
             </Button>
           )}

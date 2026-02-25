@@ -10,7 +10,7 @@ type Props = { searchParams: Promise<{ rentalId?: string; listingId?: string }> 
 
 export const metadata = {
   title: "Checkout",
-  description: "Confirm your booking and payment",
+  description: "Confirm your stay and payment",
 };
 
 export default async function CheckoutPage({ searchParams }: Props) {
@@ -42,10 +42,11 @@ export default async function CheckoutPage({ searchParams }: Props) {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto w-full max-w-[800px] px-4 py-8">
-        <h1 className="text-2xl font-bold text-zinc-900">Checkout</h1>
+      <div className="container mx-auto w-full max-w-[860px] px-4 py-8">
+        <h1 className="text-2xl font-black tracking-tight text-zinc-900">Checkout</h1>
+        <p className="mt-0.5 text-sm text-muted-foreground">Confirm your stay and payment</p>
 
-        <div className="mt-8 grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-12">
+        <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_1fr] lg:gap-12">
           <div className="min-w-0 order-2 lg:order-1">
             <CheckoutForm rentalId={id ?? null} />
           </div>
@@ -73,16 +74,16 @@ export default async function CheckoutPage({ searchParams }: Props) {
         {listing && (
           <>
             <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t bg-white shadow-[0_-1px_3px_rgba(0,0,0,0.05)]">
-              <div className="mx-auto flex max-w-[800px] items-center justify-between gap-4 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+              <div className="mx-auto flex max-w-[860px] items-center justify-between gap-4 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
                 <div>
-                  <p className="text-xs text-muted-foreground">Total</p>
-                  <p className="text-xl font-bold tabular-nums">
+                  <p className="text-sm text-muted-foreground">Total</p>
+                  <p className="text-xl font-bold tabular-nums text-zinc-900">
                     ${total.toLocaleString()}
                   </p>
                 </div>
-                <Button asChild className="h-12 shrink-0 rounded-lg bg-primary px-6 font-medium hover:bg-primary/90">
+                <Button asChild className="h-12 shrink-0 rounded-[5px] bg-primary px-6 font-medium shadow-none hover:bg-primary/90">
                   <Link href={`/order/confirmation?rentalId=${id}`}>
-                    Book trip
+                    Reserve
                   </Link>
                 </Button>
               </div>

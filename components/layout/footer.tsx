@@ -13,7 +13,7 @@ const socialLinks = [
 
 export function Footer() {
   const pathname = usePathname();
-  if (pathname === "/messages" || pathname === "/search" || pathname?.startsWith("/become-a-host") || pathname?.startsWith("/dashboard")) return null;
+  if (pathname === "/messages" || pathname === "/search" || pathname?.startsWith("/become-a-host") || pathname?.startsWith("/dashboard") || pathname?.startsWith("/admin")) return null;
 
   const isSearchPage = pathname === "/search";
 

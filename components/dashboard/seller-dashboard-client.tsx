@@ -40,6 +40,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -399,18 +406,24 @@ function ReservationCard({
           {/* Row 1: guest + status */}
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
-              <Avatar className="size-6 shrink-0">
-                <AvatarImage src={res.guestPhoto} alt={res.guestName} />
-                <AvatarFallback className="bg-zinc-100 text-[9px] font-semibold text-zinc-600">
-                  {res.guestInitials}
-                </AvatarFallback>
-              </Avatar>
-              <p className="min-w-0 flex-1 truncate text-sm font-semibold text-zinc-900">{res.guestName}</p>
+              <Link
+                href="/profile/buyer-1"
+                className="flex shrink-0 rounded-full focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                aria-label={`View ${res.guestName}'s profile`}
+              >
+                <Avatar className="size-6 shrink-0">
+                  <AvatarImage src={res.guestPhoto} alt={res.guestName} />
+                  <AvatarFallback className="bg-zinc-100 text-[9px] font-semibold text-zinc-600">
+                    {res.guestInitials}
+                  </AvatarFallback>
+                </Avatar>
+              </Link>
+              <p className="min-w-0 flex-1 truncate text-sm font-semibold !text-black">{res.guestName}</p>
             </div>
             <StatusBadge status={res.status} />
           </div>
-          {/* Row 2: property name — text-sm like map view */}
-          <p className="truncate text-sm text-muted-foreground">{res.propertyName}</p>
+          {/* Row 2: property name — black like listing card title */}
+          <p className="truncate text-sm !text-black">{res.propertyName}</p>
           {/* Row 3: dates + details — text-sm text-muted-foreground */}
           <div className="space-y-1 text-sm text-muted-foreground">
             <div className="flex items-center gap-1.5">
@@ -796,7 +809,7 @@ function ListingsTab() {
                 />
                 <div className="mt-3.5 px-4 pb-1">
                   <div className="flex items-start justify-between gap-2">
-                    <h3 className="min-w-0 flex-1 truncate text-sm font-semibold leading-snug text-zinc-900 group-hover:underline">
+                    <h3 className="min-w-0 flex-1 truncate text-sm font-semibold leading-snug !text-black group-hover:underline">
                       {listing.title}
                     </h3>
                     {listing.reviewCount > 0 && (
@@ -1157,6 +1170,21 @@ export function SellerDashboardClient() {
     }
   }, [pathname, router, tabParam]);
 
+  // Lock body scroll when messages tab is active so the layout is viewport-locked
+  useEffect(() => {
+    if (activeTab === "messages") {
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    };
+  }, [activeTab]);
+
   // Sliding underline: width = text width only, centered under tab — desktop
   useEffect(() => {
     const listEl = tabListRef.current;
@@ -1216,7 +1244,10 @@ export function SellerDashboardClient() {
   }, [activeTab]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
+    <div className={cn(
+      "flex flex-col bg-white",
+      activeTab === "messages" ? "h-screen overflow-hidden" : "min-h-screen"
+    )}>
 
       {/* ── Header ── */}
       <header className="sticky top-0 z-50 w-full border-b border-zinc-100 bg-white">
@@ -1270,13 +1301,32 @@ export function SellerDashboardClient() {
             >
               Switch to traveling
             </Link>
-            <Avatar className="size-9 shrink-0 cursor-pointer border border-zinc-200">
-              <AvatarImage
-                src={HOST_PHOTO}
-                alt="Jamie Rivera"
-              />
-              <AvatarFallback className="bg-zinc-900 text-xs font-bold text-white">JR</AvatarFallback>
-            </Avatar>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="flex shrink-0 rounded-full focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  aria-label="Account menu"
+                >
+                  <Avatar className="size-9 shrink-0 border border-zinc-200">
+                    <AvatarImage
+                      src={HOST_PHOTO}
+                      alt="Jamie Rivera"
+                    />
+                    <AvatarFallback className="bg-zinc-900 text-xs font-bold text-white">JR</AvatarFallback>
+                  </Avatar>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 min-w-48 rounded-lg border-zinc-100 p-2 shadow-lg">
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard/seller">My dashboard</Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="-mx-1 my-1 h-px bg-zinc-100" />
+                <DropdownMenuItem asChild>
+                  <Link href="/">Log out</Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
@@ -1315,8 +1365,8 @@ export function SellerDashboardClient() {
 
       {/* ── Content ── */}
       {activeTab === "messages" ? (
-        <div className="flex flex-1 overflow-hidden" style={{ height: "calc(100vh - 64px)" }}>
-          <div className="flex w-full px-4 sm:px-6">
+        <div className="flex min-h-0 flex-1 overflow-hidden">
+          <div className="flex h-full min-h-0 w-full">
             <MessagesClient embedded />
           </div>
         </div>

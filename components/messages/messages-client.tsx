@@ -9,6 +9,7 @@ import {
   ImageIcon,
   Send,
   ChevronRight,
+  ChevronLeft,
   Wifi,
   Home,
   MapPin as MapPinLucide,
@@ -20,14 +21,15 @@ import {
   Cigarette,
   PawPrint,
   PartyPopper,
+  X,
 } from "lucide-react";
 import { MapPin, Calendar, Star } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 /* -------------------------------------------------------------------------- */
 /*  Mock data — home rentals                                                   */
@@ -90,85 +92,131 @@ const DUMMY_USERS = [
 type Thread = {
   id: string;
   userId: string;
+  guestIds: string[];
+  previewSenderId: string;
   preview: string;
   time: string;
   unread: boolean;
   listingTitle: string;
+  listingImage: string;
   dates: string;
+  status: "confirmed" | "pending" | "completed" | "cancelled";
+  /** Profile slug for the other user (buyer or seller) — e.g. buyer-1, seller-1 */
+  otherProfileSlug: string;
 };
 
 const MOCK_THREADS: Thread[] = [
   {
     id: "t1",
     userId: "u1",
+    guestIds: ["u1"],
+    previewSenderId: "u1",
     preview: "The lockbox code is 4821. Check-in is any time after 3 PM — see you soon!",
     time: "2m ago",
     unread: true,
     listingTitle: "Sunny Studio · San Francisco",
+    listingImage: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=200&h=150&fit=crop",
     dates: "May 15 – 18",
+    status: "confirmed",
+    otherProfileSlug: "buyer-1",
   },
   {
     id: "t2",
     userId: "u2",
+    guestIds: ["u2"],
+    previewSenderId: "u2",
     preview: "Thanks for choosing our beach house! Let me know if you need anything.",
     time: "1h ago",
     unread: true,
     listingTitle: "Beach House · Malibu",
+    listingImage: "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=200&h=150&fit=crop",
     dates: "May 20 – 22",
+    status: "confirmed",
+    otherProfileSlug: "buyer-1",
   },
   {
     id: "t3",
     userId: "u3",
+    guestIds: ["u3", "u4"],
+    previewSenderId: "u3",
     preview: "Self check-in instructions have been sent to your email.",
     time: "3h ago",
     unread: false,
     listingTitle: "Downtown Loft · Chicago",
+    listingImage: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=200&h=150&fit=crop",
     dates: "Jun 1 – 4",
+    status: "confirmed",
+    otherProfileSlug: "buyer-1",
   },
   {
     id: "t4",
     userId: "u4",
+    guestIds: ["u4"],
+    previewSenderId: "u4",
     preview: "Hope you enjoyed your stay! Don't forget to leave a review.",
     time: "Yesterday",
     unread: false,
     listingTitle: "Garden Cottage · Berkeley",
+    listingImage: "https://images.unsplash.com/photo-1560185007-c5ca9d2c014d?w=200&h=150&fit=crop",
     dates: "Apr 10 – 12",
+    status: "completed",
+    otherProfileSlug: "buyer-1",
   },
   {
     id: "t5",
     userId: "u5",
+    guestIds: ["u5", "u6", "u3"],
+    previewSenderId: "u5",
     preview: "The WiFi password is written on the card by the fridge.",
     time: "2d ago",
     unread: false,
     listingTitle: "Mountain Cabin · Lake Tahoe",
+    listingImage: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=200&h=150&fit=crop",
     dates: "May 25 – 28",
+    status: "confirmed",
+    otherProfileSlug: "buyer-1",
   },
   {
     id: "t6",
     userId: "u6",
+    guestIds: ["u6"],
+    previewSenderId: "u6",
     preview: "Thank you for the kind review — you're welcome back anytime!",
     time: "1w ago",
     unread: false,
     listingTitle: "Historic Brownstone · Boston",
+    listingImage: "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=200&h=150&fit=crop",
     dates: "Mar 1 – 4",
+    status: "completed",
+    otherProfileSlug: "buyer-1",
   },
   {
     id: "t7",
     userId: "u7",
+    guestIds: ["u7"],
+    previewSenderId: "u7",
     preview: "Thanks for reaching out.",
     time: "2w ago",
     unread: false,
     listingTitle: "Sunny Studio · San Francisco",
+    listingImage: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=200&h=150&fit=crop",
     dates: "Nov 5 – 7",
+    status: "cancelled",
+    otherProfileSlug: "buyer-1",
   },
   {
     id: "t8",
     userId: "u8",
+    guestIds: ["u8"],
+    previewSenderId: "u8",
     preview: "Request for Mar 5 – 8",
     time: "1d ago",
     unread: true,
     listingTitle: "Sunny Studio · San Francisco",
+    listingImage: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=200&h=150&fit=crop",
     dates: "Mar 5 – 8",
+    status: "pending",
+    otherProfileSlug: "buyer-1",
   },
 ];
 
@@ -264,6 +312,49 @@ const BOOKING_DETAIL = {
 };
 
 /* -------------------------------------------------------------------------- */
+/*  Helpers                                                                    */
+/* -------------------------------------------------------------------------- */
+
+function getUserById(id: string) {
+  return (
+    DUMMY_USERS.find((u) => u.id === id) ?? {
+      id,
+      name: "Unknown",
+      photo: "",
+      initials: "?",
+    }
+  );
+}
+
+function formatGuestNames(guestIds: string[]): string {
+  if (guestIds.length === 0) return "Unknown";
+  if (guestIds.length === 1) return getUserById(guestIds[0]).name;
+  const first = getUserById(guestIds[0]).name.split(" ")[0];
+  const second = getUserById(guestIds[1]).name.split(" ")[0];
+  const extra = guestIds.length - 2;
+  if (extra === 0) return `${first} & ${second}`;
+  return `${first}, ${second} and ${extra} other${extra > 1 ? "s" : ""}`;
+}
+
+function formatPreview(senderId: string, preview: string): string {
+  if (senderId === "me") return `You: ${preview}`;
+  return `${getUserById(senderId).name.split(" ")[0]}: ${preview}`;
+}
+
+function statusDotClass(status: Thread["status"]): string {
+  if (status === "confirmed") return "bg-emerald-500";
+  if (status === "pending") return "bg-amber-400";
+  return "bg-zinc-300";
+}
+
+function statusLabel(status: Thread["status"]): string {
+  if (status === "confirmed") return "Confirmed";
+  if (status === "pending") return "Pending";
+  if (status === "completed") return "Completed";
+  return "Cancelled";
+}
+
+/* -------------------------------------------------------------------------- */
 /*  Thread list                                                                */
 /* -------------------------------------------------------------------------- */
 
@@ -280,82 +371,101 @@ function ThreadList({
   const filtered = search.trim()
     ? threads.filter(
         (t) =>
-          getUserById(t.userId).name
-            .toLowerCase()
-            .includes(search.toLowerCase()) ||
+          formatGuestNames(t.guestIds).toLowerCase().includes(search.toLowerCase()) ||
           t.listingTitle.toLowerCase().includes(search.toLowerCase())
       )
     : threads;
 
   return (
-    <aside className="flex w-full shrink-0 flex-col border-r border-zinc-100 bg-white md:w-72 lg:w-[300px]">
-      <div className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-100 -ml-4 sm:-ml-6">
-        <div className="pl-4 sm:pl-6">
-          <h1 className="text-lg font-bold text-zinc-900">Messages</h1>
-        </div>
+    <aside className="flex min-h-0 min-w-0 w-full shrink-0 flex-col border-r border-zinc-100 bg-white md:w-96 lg:w-[432px]">
+      <div className="flex h-14 shrink-0 items-center border-b border-zinc-100 px-4 sm:px-6">
+        <h1 className="text-lg font-semibold text-zinc-900">Messages</h1>
       </div>
 
-      <div className="border-b border-zinc-100 -ml-4 sm:-ml-6">
-        <div className="relative py-2 pl-4 pr-3 sm:pl-6 sm:pr-3">
-          <Search className="absolute left-7 top-1/2 size-4 -translate-y-1/2 text-muted-foreground sm:left-9" />
+      <div className="border-b border-zinc-100 px-4 sm:px-6">
+        <div className="relative py-2">
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
           <Input
             placeholder="Search messages"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-9 pl-9 text-sm focus-visible:border focus-visible:border-primary focus-visible:ring-0"
+            className="h-9 rounded-[5px] border-zinc-200 bg-white pl-9 pr-3 text-sm shadow-none focus-visible:border-zinc-900 focus-visible:ring-0"
           />
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto overflow-x-visible">
-        <div className="-mx-4 w-[calc(100%+2rem)] sm:-mx-6 sm:w-[calc(100%+3rem)]">
-          <ul className="list-none p-0">
-            {filtered.map((thread) => {
-              const user = getUserById(thread.userId);
-              const isActive = activeId === thread.id;
-              return (
-                <li key={thread.id}>
-                  <button
-                    type="button"
-                    onClick={() => onSelect(thread.id)}
-                    className={cn(
-                      "flex w-full items-start gap-3 py-3 px-4 text-left transition-colors hover:bg-zinc-50 sm:px-6",
-                      isActive && "bg-zinc-100"
-                    )}
-                  >
-                    <Avatar className="size-10 shrink-0">
-                      <AvatarImage src={user.photo} alt={user.name} />
-                      <AvatarFallback>{user.initials}</AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className={cn(
-                          "truncate text-sm",
-                          thread.unread ? "font-semibold text-zinc-900" : "font-medium text-zinc-700"
-                        )}>
-                          {user.name}
-                        </span>
-                        <span className="shrink-0 text-xs text-muted-foreground">
-                          {thread.time}
-                        </span>
-                      </div>
-                      <p className="mt-0.5 truncate text-xs text-muted-foreground">{thread.listingTitle} · {thread.dates}</p>
-                      <p className={cn(
-                        "mt-0.5 truncate text-sm",
-                        thread.unread ? "font-medium text-zinc-800" : "text-muted-foreground"
-                      )}>
-                        {thread.preview}
-                      </p>
+      <div className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
+        <ul className="list-none p-0">
+          {filtered.map((thread) => {
+            const primaryUser = getUserById(thread.userId);
+            const guestNames = formatGuestNames(thread.guestIds);
+            const previewText = formatPreview(thread.previewSenderId, thread.preview);
+            const isActive = activeId === thread.id;
+            return (
+              <li key={thread.id}>
+                <button
+                  type="button"
+                  onClick={() => onSelect(thread.id)}
+                  className={cn(
+                    "flex w-full items-start gap-3 px-4 py-3.5 text-left transition-colors hover:bg-zinc-50 sm:px-6",
+                    isActive && "bg-zinc-100"
+                  )}
+                >
+                  {/* Listing thumbnail with guest avatar overlay */}
+                  <div className="relative shrink-0">
+                    <div className="h-[52px] w-[70px] overflow-hidden rounded-lg bg-zinc-100">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={thread.listingImage}
+                        alt={thread.listingTitle}
+                        className="h-full w-full object-cover"
+                      />
                     </div>
-                    {thread.unread && (
-                      <span className="mt-1.5 size-2 shrink-0 rounded-full bg-primary" aria-label="Unread" />
-                    )}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+                    {/* Guest avatar overlay — right bottom */}
+                    <Link
+                      href={`/profile/${thread.otherProfileSlug}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="absolute -bottom-1.5 -right-1.5 size-[22px] overflow-hidden rounded-full border-2 border-white bg-zinc-200 focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      aria-label={`View ${primaryUser.name}'s profile`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={primaryUser.photo}
+                        alt={primaryUser.name}
+                        className="h-full w-full object-cover"
+                      />
+                    </Link>
+                  </div>
+
+                  {/* Content */}
+                  <div className="min-w-0 flex-1 pt-0.5">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <span className={cn(
+                        "min-w-0 flex-1 truncate text-sm",
+                        thread.unread ? "font-semibold text-zinc-900" : "font-medium text-zinc-900"
+                      )}>
+                        {guestNames}
+                      </span>
+                      <span className="shrink-0 text-xs text-muted-foreground">{thread.time}</span>
+                    </div>
+
+                    <div className="mt-0.5 flex items-center gap-1.5">
+                      <span className={cn("size-1.5 shrink-0 rounded-full", statusDotClass(thread.status))} />
+                      <span className="text-xs text-muted-foreground">{statusLabel(thread.status)} · {thread.dates}</span>
+                    </div>
+
+                    <p className={cn(
+                      "mt-0.5 truncate text-sm",
+                      thread.unread ? "font-medium text-zinc-900" : "text-muted-foreground"
+                    )}>
+                      {previewText}
+                    </p>
+                  </div>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </aside>
   );
@@ -369,10 +479,16 @@ function ConversationPanel({
   thread,
   messages,
   onSendMessage,
+  showDetailPanel,
+  onShowDetailPanel,
+  onBack,
 }: {
   thread: Thread;
   messages: Message[];
   onSendMessage?: (threadId: string, text: string) => void;
+  showDetailPanel: boolean;
+  onShowDetailPanel: () => void;
+  onBack?: () => void;
 }) {
   const user = getUserById(thread.userId);
   const [draft, setDraft] = useState("");
@@ -385,17 +501,43 @@ function ConversationPanel({
   }, [messages]);
 
   return (
-    <div className="flex min-w-0 flex-1 flex-col">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       {/* Header */}
       <div className="flex h-14 shrink-0 items-center gap-3 border-b border-zinc-100 px-4 sm:px-6">
-        <Avatar className="size-9 shrink-0">
-          <AvatarImage src={user.photo} alt={user.name} />
-          <AvatarFallback>{user.initials}</AvatarFallback>
-        </Avatar>
+        {onBack ? (
+          <button
+            type="button"
+            onClick={onBack}
+            className="flex size-8 shrink-0 items-center justify-center rounded-full text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-900"
+            aria-label="Back to conversations"
+          >
+            <ChevronLeft className="size-5" />
+          </button>
+        ) : null}
+        <Link
+          href={`/profile/${thread.otherProfileSlug}`}
+          className="flex shrink-0 rounded-full focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          aria-label={`View ${user.name}'s profile`}
+        >
+          <Avatar className="size-8 shrink-0">
+            <AvatarImage src={user.photo} alt={user.name} />
+            <AvatarFallback className="text-xs">{user.initials}</AvatarFallback>
+          </Avatar>
+        </Link>
         <div className="min-w-0 flex-1">
-          <h2 className="text-sm font-semibold text-zinc-900">{user.name}</h2>
+          <h2 className="text-sm font-semibold text-zinc-900">{formatGuestNames(thread.guestIds)}</h2>
           <p className="truncate text-xs text-muted-foreground">{thread.listingTitle} · {thread.dates}</p>
         </div>
+        {!showDetailPanel && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onShowDetailPanel}
+            className="h-9 shrink-0 rounded-full border-zinc-200 px-3 text-sm font-medium shadow-none hover:bg-zinc-100"
+          >
+            Show reservation
+          </Button>
+        )}
       </div>
 
       {/* Messages — no mx-auto, bubbles anchor to their respective sides */}
@@ -408,10 +550,10 @@ function ConversationPanel({
               return (
                 <div key={i} className="flex justify-end">
                   <div className="max-w-[72%]">
-                    <div className="rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl rounded-br-sm bg-primary px-3.5 py-2.5 text-white">
+                    <div className="rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl rounded-br-sm bg-zinc-700 px-3.5 py-2.5 text-white">
                       <p className="text-sm leading-relaxed">{msg.text}</p>
                     </div>
-                    <p className="mt-1 text-right text-[11px] text-muted-foreground">{msg.time}</p>
+                    <p className="mt-1 text-right text-xs text-muted-foreground">{msg.time}</p>
                   </div>
                 </div>
               );
@@ -420,15 +562,21 @@ function ConversationPanel({
               <div key={i} className="flex justify-start">
                 <div className="flex max-w-[72%] flex-col">
                   <div className="flex items-end gap-2">
-                    <Avatar className="size-7 shrink-0">
-                      <AvatarImage src={sender!.photo} alt={sender!.name} />
-                      <AvatarFallback>{sender!.initials}</AvatarFallback>
-                    </Avatar>
+                    <Link
+                      href={`/profile/${thread.otherProfileSlug}`}
+                      className="flex shrink-0 rounded-full focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      aria-label={`View ${sender!.name}'s profile`}
+                    >
+                      <Avatar className="size-7 shrink-0">
+                        <AvatarImage src={sender!.photo} alt={sender!.name} />
+                        <AvatarFallback>{sender!.initials}</AvatarFallback>
+                      </Avatar>
+                    </Link>
                     <div className="rounded-tl-2xl rounded-tr-2xl rounded-br-2xl rounded-bl-sm bg-zinc-100 px-3.5 py-2.5 text-zinc-900">
                       <p className="text-sm leading-relaxed">{msg.text}</p>
                     </div>
                   </div>
-                  <p className="mt-1 pl-9 text-[11px] text-muted-foreground">{msg.time}</p>
+                  <p className="mt-1 pl-9 text-xs text-muted-foreground">{msg.time}</p>
                 </div>
               </div>
             );
@@ -460,7 +608,7 @@ function ConversationPanel({
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             placeholder="Write a message..."
-            className="min-h-10 flex-1 rounded-full border-zinc-200 bg-zinc-50 px-4 text-sm shadow-none focus-visible:border-primary focus-visible:ring-0"
+            className="min-h-10 flex-1 rounded-full border-zinc-200 bg-white px-4 text-sm shadow-none focus-visible:border-zinc-900 focus-visible:ring-0"
             autoComplete="off"
           />
           <Button
@@ -481,62 +629,93 @@ function ConversationPanel({
 /*  Booking detail panel (right sidebar — rich scrollable column)             */
 /* -------------------------------------------------------------------------- */
 
-function BookingDetailPanel({ thread }: { thread: Thread }) {
+function BookingDetailPanel({
+  thread,
+  show,
+  onClose,
+  fullWidth = false,
+}: {
+  thread: Thread;
+  show: boolean;
+  onClose: () => void;
+  fullWidth?: boolean;
+}) {
   const b = BOOKING_DETAIL;
   const subtotal = b.nights * b.pricePerNight;
   const total = subtotal + b.serviceFee + b.cleaningFee;
 
   return (
-    <aside className="hidden w-[360px] shrink-0 flex-col border-l border-zinc-100 bg-white xl:flex xl:w-[400px]">
+    <aside
+      className={cn(
+        "min-h-0 shrink-0 flex-col overflow-hidden bg-white transition-[width] duration-300 ease-in-out",
+        fullWidth
+          ? "flex w-full flex-1 min-h-0"
+          : "hidden xl:flex",
+        !fullWidth && show && "border-l border-zinc-100"
+      )}
+      style={fullWidth ? undefined : { width: show ? "432px" : "0px" }}
+    >
       {/* Header */}
-      <div className="flex h-14 shrink-0 items-center border-b border-zinc-100 px-5">
-        <h2 className="text-sm font-semibold text-zinc-900">Reservation details</h2>
+      <div className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-100 px-4 sm:px-6">
+        <h2 className="text-lg font-semibold text-zinc-900">Reservation details</h2>
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex size-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-zinc-100 hover:text-zinc-900"
+          aria-label="Close reservation details"
+        >
+          <X className="size-4" />
+        </button>
       </div>
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto">
         <div className="flex flex-col gap-0">
 
-          {/* Listing image + title + rating */}
-          <div className="p-5 pb-4">
-            <Link href={`/listing/${b.listingId}`} className="group block">
-              <div className="relative aspect-[16/10] w-full overflow-hidden rounded-xl bg-zinc-100">
-                <Image
-                  src={b.image}
-                  alt={b.title}
-                  fill
-                  className="object-cover transition-transform duration-200 group-hover:scale-105"
-                  sizes="400px"
-                />
-              </div>
-              <div className="mt-3">
-                <h3 className="font-semibold text-zinc-900 group-hover:underline">{b.title}</h3>
-                <p className="mt-0.5 text-xs text-muted-foreground">{b.subtitle}</p>
-                <div className="mt-1.5 flex items-center gap-1">
-                  <Star size={13} weight="fill" className="text-zinc-900 shrink-0" />
-                  <span className="text-sm font-semibold tabular-nums text-zinc-900">{b.rating.toFixed(2)}</span>
-                  <span className="text-sm text-muted-foreground">· {b.reviewCount} reviews</span>
-                </div>
-              </div>
-            </Link>
+          {/* Listing image + title + rating + View listing */}
+          <div className="px-4 pt-4 pb-4 sm:px-6">
+            <div className="relative aspect-[16/10] w-full overflow-hidden rounded-xl bg-zinc-100">
+              <Image
+                src={b.image}
+                alt={b.title}
+                fill
+                className="object-cover"
+                sizes="400px"
+              />
+            </div>
+            <h3 className="mt-3 text-base font-semibold text-zinc-900">{b.title}</h3>
+            <p className="mt-0.5 text-sm text-muted-foreground">{b.subtitle}</p>
+            <div className="mt-1.5 flex items-center gap-1">
+              <Star size={13} weight="fill" className="text-zinc-900 shrink-0" />
+              <span className="text-sm font-semibold tabular-nums text-zinc-900">{b.rating.toFixed(2)}</span>
+              <span className="text-sm text-muted-foreground">· {b.reviewCount} reviews</span>
+            </div>
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="mt-3 h-9 rounded-[5px] border-zinc-200 font-medium shadow-none hover:bg-zinc-100"
+            >
+              <Link href="/listing/e1">View listing</Link>
+            </Button>
           </div>
 
-          <Separator className="bg-zinc-100" />
+          <div className="px-4 sm:px-6"><div className="border-t border-zinc-100" /></div>
 
-          {/* Price summary + Reserve */}
-          <div className="p-5 pb-4 space-y-3">
+          {/* Price summary — no Reserve */}
+          <div className="px-4 pb-4 pt-4 space-y-3 sm:px-6">
             <div className="flex items-baseline gap-1">
               <span className="text-xl font-bold tabular-nums text-zinc-900">${b.pricePerNight}</span>
               <span className="text-sm text-muted-foreground">/ night</span>
             </div>
             {/* Check-in / Check-out */}
-            <div className="grid grid-cols-2 divide-x divide-zinc-100 overflow-hidden rounded-lg border border-zinc-200">
+            <div className="grid grid-cols-2 divide-x divide-zinc-100 overflow-hidden rounded-lg border border-zinc-100">
               <div className="px-3 py-2.5">
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Check-in</p>
+                <p className="text-xs font-semibold text-muted-foreground">Check-in</p>
                 <p className="mt-0.5 text-sm font-medium text-zinc-900">{b.checkIn}</p>
               </div>
               <div className="px-3 py-2.5">
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Checkout</p>
+                <p className="text-xs font-semibold text-muted-foreground">Checkout</p>
                 <p className="mt-0.5 text-sm font-medium text-zinc-900">{b.checkOut}</p>
               </div>
             </div>
@@ -554,47 +733,45 @@ function BookingDetailPanel({ thread }: { thread: Thread }) {
                 <span className="text-muted-foreground">Service fee</span>
                 <span className="tabular-nums font-medium text-zinc-900">${b.serviceFee}</span>
               </div>
-              <Separator className="bg-zinc-100" />
-              <div className="flex justify-between font-semibold text-zinc-900">
-                <span>Total</span>
-                <span className="tabular-nums">${total}</span>
+              <div className="border-t border-zinc-100 pt-2">
+                <div className="flex justify-between font-semibold text-zinc-900">
+                  <span>Total</span>
+                  <span className="tabular-nums">${total}</span>
+                </div>
               </div>
             </div>
-            <Button asChild className="h-11 w-full rounded-[5px] bg-primary font-medium hover:bg-primary/90 shadow-none">
-              <Link href={`/checkout?listingId=${b.listingId}`}>Reserve</Link>
-            </Button>
           </div>
 
-          <Separator className="bg-zinc-100" />
+          <div className="px-4 sm:px-6"><div className="border-t border-zinc-100" /></div>
 
           {/* Facts about the place */}
-          <div className="p-5 pb-4">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Facts about the place</p>
+          <div className="px-4 pb-4 pt-4 sm:px-6">
+            <h3 className="text-lg font-semibold text-zinc-900">Facts about the place</h3>
             <div className="mt-3 grid grid-cols-2 gap-2.5">
-              <div className="flex items-center gap-2 text-sm text-zinc-700">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <BedDouble className="size-4 shrink-0 text-muted-foreground" />
                 {b.facts.bedrooms} bedroom{b.facts.bedrooms !== 1 ? "s" : ""}
               </div>
-              <div className="flex items-center gap-2 text-sm text-zinc-700">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Bath className="size-4 shrink-0 text-muted-foreground" />
                 {b.facts.bathrooms} bathroom{b.facts.bathrooms !== 1 ? "s" : ""}
               </div>
-              <div className="flex items-center gap-2 text-sm text-zinc-700">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Users className="size-4 shrink-0 text-muted-foreground" />
                 {b.facts.guests} guests max
               </div>
-              <div className="flex items-center gap-2 text-sm text-zinc-700">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Home className="size-4 shrink-0 text-muted-foreground" />
                 {b.facts.type}
               </div>
             </div>
           </div>
 
-          <Separator className="bg-zinc-100" />
+          <div className="px-4 sm:px-6"><div className="border-t border-zinc-100" /></div>
 
           {/* Getting there */}
-          <div className="p-5 pb-4">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Getting there</p>
+          <div className="px-4 pb-4 pt-4 sm:px-6">
+            <h3 className="text-lg font-semibold text-zinc-900">Getting there</h3>
             <p className="mt-2.5 text-sm text-muted-foreground leading-relaxed">{b.gettingThere}</p>
             <button
               type="button"
@@ -608,122 +785,61 @@ function BookingDetailPanel({ thread }: { thread: Thread }) {
             </button>
           </div>
 
-          <Separator className="bg-zinc-100" />
+          <div className="px-4 sm:px-6"><div className="border-t border-zinc-100" /></div>
 
           {/* Check-in */}
-          <div className="p-5 pb-4">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Check-in</p>
+          <div className="px-4 pb-4 pt-4 sm:px-6">
+            <h3 className="text-lg font-semibold text-zinc-900">Check-in</h3>
             <div className="mt-3 space-y-2">
               <div className="flex items-center gap-2 text-sm">
                 <Clock className="size-4 shrink-0 text-muted-foreground" />
-                <span className="text-zinc-700">After {b.checkInTime}</span>
+                <span className="text-muted-foreground">After {b.checkInTime}</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <ShieldCheck className="size-4 shrink-0 text-muted-foreground" />
-                <span className="text-zinc-700">Self check-in via lockbox</span>
+                <span className="text-muted-foreground">Self check-in via lockbox</span>
               </div>
             </div>
           </div>
 
-          <Separator className="bg-zinc-100" />
+          <div className="px-4 sm:px-6"><div className="border-t border-zinc-100" /></div>
 
           {/* WiFi */}
-          <div className="p-5 pb-4">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">WiFi</p>
+          <div className="px-4 pb-4 pt-4 sm:px-6">
+            <h3 className="text-lg font-semibold text-zinc-900">WiFi</h3>
             <div className="mt-3 space-y-2">
               <div className="flex items-center gap-2 text-sm">
                 <Wifi className="size-4 shrink-0 text-muted-foreground" />
                 <div>
-                  <span className="text-zinc-700">Network: </span>
+                  <span className="text-muted-foreground">Network: </span>
                   <span className="font-medium text-zinc-900">{b.wifiName}</span>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-sm pl-6">
-                <span className="text-zinc-700">Password: </span>
+                <span className="text-muted-foreground">Password: </span>
                 <span className="font-medium text-zinc-900">{b.wifiPassword}</span>
               </div>
             </div>
           </div>
 
-          <Separator className="bg-zinc-100" />
+          <div className="px-4 sm:px-6"><div className="border-t border-zinc-100" /></div>
 
           {/* House rules */}
-          <div className="p-5 pb-4">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">House rules</p>
+          <div className="px-4 pb-4 pt-4 sm:px-6">
+            <h3 className="text-lg font-semibold text-zinc-900">House rules</h3>
             <ul className="mt-3 space-y-2.5">
               {b.houseRules.map((rule, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm">
                   <rule.icon className="size-4 mt-0.5 shrink-0 text-muted-foreground" />
-                  <span className="text-zinc-700">{rule.text}</span>
+                  <span className="text-muted-foreground">{rule.text}</span>
                 </li>
               ))}
             </ul>
           </div>
 
-          <Separator className="bg-zinc-100" />
-
-          {/* Reviews by the host */}
-          <div className="p-5 pb-4">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Review by the host</p>
-            <div className="mt-3 space-y-3">
-              <p className="text-sm text-muted-foreground leading-relaxed italic">"{b.hostReview.text}"</p>
-              <div className="flex items-center gap-2.5">
-                <Avatar className="size-8 shrink-0">
-                  <AvatarImage src={b.hostReview.reviewerPhoto} alt={b.hostReview.reviewer} />
-                  <AvatarFallback>{b.hostReview.reviewerInitials}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="text-sm font-medium text-zinc-900">{b.hostReview.reviewer}</p>
-                  <p className="text-xs text-muted-foreground">{b.hostReview.date}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <Separator className="bg-zinc-100" />
-
-          {/* Action buttons */}
-          <div className="p-5 space-y-2.5">
-            <Button
-              variant="outline"
-              className="h-11 w-full justify-between rounded-[5px] text-sm font-medium text-zinc-700 shadow-none hover:bg-zinc-100"
-              asChild
-            >
-              <Link href={`/listing/${b.listingId}`}>
-                View listing
-                <ChevronRight className="size-4 text-muted-foreground" />
-              </Link>
-            </Button>
-            <Button
-              variant="outline"
-              className="h-11 w-full justify-between rounded-[5px] text-sm font-medium text-zinc-700 shadow-none hover:bg-zinc-100"
-              asChild
-            >
-              <Link href={`/order/confirmation?listingId=${b.listingId}`}>
-                View booking
-                <ChevronRight className="size-4 text-muted-foreground" />
-              </Link>
-            </Button>
-          </div>
-
         </div>
       </div>
     </aside>
-  );
-}
-
-/* -------------------------------------------------------------------------- */
-/*  Helpers                                                                    */
-/* -------------------------------------------------------------------------- */
-
-function getUserById(id: string) {
-  return (
-    DUMMY_USERS.find((u) => u.id === id) ?? {
-      id,
-      name: "Unknown",
-      photo: "",
-      initials: "?",
-    }
   );
 }
 
@@ -761,35 +877,9 @@ export function MessagesClient({ embedded = false }: { embedded?: boolean }) {
 
   const activeThread = MOCK_THREADS.find((t) => t.id === activeId) ?? null;
   const messages = activeId ? (messagesByThread[activeId] ?? []) : [];
-
-  if (embedded) {
-    return (
-      <div className="flex h-full w-full">
-        <ThreadList
-          threads={MOCK_THREADS}
-          activeId={activeId}
-          onSelect={setActiveId}
-        />
-        {activeThread ? (
-          <ConversationPanel
-            thread={activeThread}
-            messages={messages}
-            onSendMessage={(threadId, text) => {
-              setMessagesByThread((prev) => ({
-                ...prev,
-                [threadId]: [...(prev[threadId] ?? []), { from: "me", text, time: "Just now" }],
-              }));
-            }}
-          />
-        ) : (
-          <div className="flex min-w-0 flex-1 items-center justify-center">
-            <p className="text-sm text-muted-foreground">Select a conversation to start messaging.</p>
-          </div>
-        )}
-        {activeThread && <BookingDetailPanel thread={activeThread} />}
-      </div>
-    );
-  }
+  const [showDetailPanel, setShowDetailPanel] = useState(true);
+  const isMdOrLarger = useMediaQuery("(min-width: 768px)");
+  const [mobileView, setMobileView] = useState<"threads" | "chat" | "reservation">("threads");
 
   const handleSendMessage = (threadId: string, text: string) => {
     setMessagesByThread((prev) => ({
@@ -798,24 +888,83 @@ export function MessagesClient({ embedded = false }: { embedded?: boolean }) {
     }));
   };
 
-  return (
-    <div className="w-full px-4 sm:px-6">
-      <div className="flex h-[calc(100vh-4rem)] w-full">
+  const handleThreadSelect = (id: string) => {
+    setActiveId(id);
+    if (!isMdOrLarger) setMobileView("chat");
+  };
+
+  const conversationPanel = activeThread ? (
+    <ConversationPanel
+      thread={activeThread}
+      messages={messages}
+      onSendMessage={handleSendMessage}
+      showDetailPanel={isMdOrLarger ? showDetailPanel : false}
+      onShowDetailPanel={isMdOrLarger ? () => setShowDetailPanel(true) : () => setMobileView("reservation")}
+      onBack={isMdOrLarger ? undefined : () => setMobileView("threads")}
+    />
+  ) : (
+    <div className="flex min-w-0 flex-1 items-center justify-center">
+      <p className="text-sm text-muted-foreground">Select a conversation to start messaging.</p>
+    </div>
+  );
+
+  function renderContent() {
+    if (!isMdOrLarger) {
+      if (mobileView === "threads") {
+        return (
+          <ThreadList
+            threads={MOCK_THREADS}
+            activeId={activeId}
+            onSelect={handleThreadSelect}
+          />
+        );
+      }
+      if (mobileView === "chat") {
+        return conversationPanel;
+      }
+      return activeThread ? (
+        <BookingDetailPanel
+          thread={activeThread}
+          show
+          fullWidth
+          onClose={() => setMobileView("chat")}
+        />
+      ) : null;
+    }
+    return (
+      <>
         <ThreadList
           threads={MOCK_THREADS}
           activeId={activeId}
           onSelect={setActiveId}
         />
-
-        {activeThread ? (
-          <ConversationPanel thread={activeThread} messages={messages} onSendMessage={handleSendMessage} />
-        ) : (
-          <div className="flex min-w-0 flex-1 items-center justify-center">
-            <p className="text-sm text-muted-foreground">Select a conversation to start messaging.</p>
-          </div>
+        {conversationPanel}
+        {activeThread && (
+          <BookingDetailPanel
+            thread={activeThread}
+            show={showDetailPanel}
+            onClose={() => setShowDetailPanel(false)}
+          />
         )}
+      </>
+    );
+  }
 
-        {activeThread && <BookingDetailPanel thread={activeThread} />}
+  const wrapperClass = "flex h-full min-h-0 w-full overflow-hidden";
+  const innerClass = embedded ? wrapperClass : "flex h-[calc(100vh-4rem)] w-full";
+
+  if (embedded) {
+    return (
+      <div className={wrapperClass}>
+        {renderContent()}
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full">
+      <div className={innerClass}>
+        {renderContent()}
       </div>
     </div>
   );
