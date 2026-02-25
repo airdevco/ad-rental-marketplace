@@ -29,7 +29,7 @@ export default function LoginPage() {
         <form>
           <CardContent className="space-y-4 pb-0">
             <div className="space-y-2">
-              <Label htmlFor="login-email">Email</Label>
+              <Label htmlFor="login-email" className="text-xs font-semibold text-zinc-900">Email</Label>
               <Input
                 id="login-email"
                 name="email"
@@ -42,7 +42,7 @@ export default function LoginPage() {
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="login-password">Password</Label>
+                <Label htmlFor="login-password" className="text-xs font-semibold text-zinc-900">Password</Label>
                 <Link
                   href="/forgot-password"
                   className="text-sm text-muted-foreground hover:text-foreground focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring focus-visible:rounded-md"

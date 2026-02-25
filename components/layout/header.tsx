@@ -10,6 +10,14 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { useListingScroll } from "@/lib/listing-scroll-context";
 import { Button } from "@/components/ui/button";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -36,6 +44,9 @@ export function Header() {
   const hidden = isListingPage && pastGallery;
   const [showHeaderSearch, setShowHeaderSearch] = useState(isSearchPage);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [saveExitOpen, setSaveExitOpen] = useState(false);
+  const isBecomeAHostPage = pathname?.startsWith("/become-a-host");
+  const isDashboardPage = pathname?.startsWith("/dashboard");
 
   useEffect(() => {
     function onScroll() {
@@ -53,7 +64,7 @@ export function Header() {
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const hideLogoForSearch = showHeaderSearch && !isDesktop;
 
-  if (hidden) return null;
+  if (hidden || isDashboardPage) return null;
 
   return (
     <header
@@ -95,6 +106,46 @@ export function Header() {
           </div>
         )}
         <div className="flex shrink-0 items-center gap-2 border-0 shadow-none">
+          {isBecomeAHostPage ? (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 shrink-0 rounded-full border-zinc-200 px-3 text-sm font-medium shadow-none hover:bg-zinc-100"
+                onClick={() => setSaveExitOpen(true)}
+                aria-label="Save and exit"
+              >
+                Save & exit
+              </Button>
+              <Dialog open={saveExitOpen} onOpenChange={setSaveExitOpen}>
+                <DialogContent className="w-full max-w-[320px] border-zinc-100 shadow-lg sm:max-w-[320px]">
+                  <DialogHeader>
+                    <DialogTitle className="text-left text-lg font-semibold text-zinc-900">
+                      Save & exit?
+                    </DialogTitle>
+                    <DialogDescription className="text-left text-muted-foreground">
+                      Your progress will be saved. You can continue setting up your listing later from your dashboard.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter className="flex flex-row gap-2 sm:justify-end">
+                    <Button
+                      variant="outline"
+                      className="h-11 rounded-[5px] font-medium shadow-none"
+                      onClick={() => setSaveExitOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button asChild className="h-11 rounded-[5px] font-medium shadow-none hover:bg-primary/90">
+                      <Link href="/" onClick={() => setSaveExitOpen(false)}>
+                        Save & exit
+                      </Link>
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </>
+          ) : (
+          <>
           {isLoggedIn && (
             <Link
               href="/dashboard/buyer"
@@ -159,6 +210,8 @@ export function Header() {
               )}
             </DropdownMenuContent>
           </DropdownMenu>
+          </>
+          )}
         </div>
       </div>
     </header>

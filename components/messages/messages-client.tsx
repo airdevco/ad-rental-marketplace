@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   Search,
   ImageIcon,
@@ -72,6 +73,18 @@ const DUMMY_USERS = [
     photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=96&h=96&fit=crop&crop=face",
     initials: "CT",
   },
+  {
+    id: "u7",
+    name: "Jamie Lee",
+    photo: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=96&h=96&fit=crop&crop=face",
+    initials: "JL",
+  },
+  {
+    id: "u8",
+    name: "Priya Singh",
+    photo: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=96&h=96&fit=crop&crop=face",
+    initials: "PS",
+  },
 ];
 
 type Thread = {
@@ -139,6 +152,24 @@ const MOCK_THREADS: Thread[] = [
     listingTitle: "Historic Brownstone · Boston",
     dates: "Mar 1 – 4",
   },
+  {
+    id: "t7",
+    userId: "u7",
+    preview: "Thanks for reaching out.",
+    time: "2w ago",
+    unread: false,
+    listingTitle: "Sunny Studio · San Francisco",
+    dates: "Nov 5 – 7",
+  },
+  {
+    id: "t8",
+    userId: "u8",
+    preview: "Request for Mar 5 – 8",
+    time: "1d ago",
+    unread: true,
+    listingTitle: "Sunny Studio · San Francisco",
+    dates: "Mar 5 – 8",
+  },
 ];
 
 type Message = {
@@ -178,6 +209,12 @@ const MOCK_MESSAGES: Record<string, Message[]> = {
   ],
   t6: [
     { from: "u6", text: "I just saw your review — it really made my day. Thank you for being such a wonderful guest!", time: "1w ago" },
+  ],
+  t7: [
+    { from: "u7", text: "Hi, I had to cancel my trip. Sorry for the inconvenience.", time: "2w ago" },
+  ],
+  t8: [
+    { from: "u8", text: "Hi! I'd like to book the Sunny Studio for Mar 5–8. Is it available?", time: "1d ago" },
   ],
 };
 
@@ -331,9 +368,11 @@ function ThreadList({
 function ConversationPanel({
   thread,
   messages,
+  onSendMessage,
 }: {
   thread: Thread;
   messages: Message[];
+  onSendMessage?: (threadId: string, text: string) => void;
 }) {
   const user = getUserById(thread.userId);
   const [draft, setDraft] = useState("");
@@ -402,6 +441,8 @@ function ConversationPanel({
         <form
           onSubmit={(e) => {
             e.preventDefault();
+            const text = draft.trim();
+            if (text && onSendMessage) onSendMessage(thread.id, text);
             setDraft("");
           }}
           className="flex items-end gap-2"
@@ -519,7 +560,7 @@ function BookingDetailPanel({ thread }: { thread: Thread }) {
                 <span className="tabular-nums">${total}</span>
               </div>
             </div>
-            <Button asChild className="h-11 w-full rounded-[5px] bg-primary font-semibold hover:bg-primary/90 shadow-none">
+            <Button asChild className="h-11 w-full rounded-[5px] bg-primary font-medium hover:bg-primary/90 shadow-none">
               <Link href={`/checkout?listingId=${b.listingId}`}>Reserve</Link>
             </Button>
           </div>
@@ -645,7 +686,7 @@ function BookingDetailPanel({ thread }: { thread: Thread }) {
           <div className="p-5 space-y-2.5">
             <Button
               variant="outline"
-              className="h-11 w-full justify-between rounded-[5px] text-sm font-semibold text-zinc-700 shadow-none hover:bg-zinc-100"
+              className="h-11 w-full justify-between rounded-[5px] text-sm font-medium text-zinc-700 shadow-none hover:bg-zinc-100"
               asChild
             >
               <Link href={`/listing/${b.listingId}`}>
@@ -655,7 +696,7 @@ function BookingDetailPanel({ thread }: { thread: Thread }) {
             </Button>
             <Button
               variant="outline"
-              className="h-11 w-full justify-between rounded-[5px] text-sm font-semibold text-zinc-700 shadow-none hover:bg-zinc-100"
+              className="h-11 w-full justify-between rounded-[5px] text-sm font-medium text-zinc-700 shadow-none hover:bg-zinc-100"
               asChild
             >
               <Link href={`/order/confirmation?listingId=${b.listingId}`}>
@@ -690,13 +731,72 @@ function getUserById(id: string) {
 /*  Main component                                                             */
 /* -------------------------------------------------------------------------- */
 
-export function MessagesClient() {
+export function MessagesClient({ embedded = false }: { embedded?: boolean }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [messagesByThread, setMessagesByThread] = useState<Record<string, Message[]>>(MOCK_MESSAGES);
   const [activeId, setActiveId] = useState<string | null>(
     MOCK_THREADS[0]?.id ?? null
   );
 
+  // When embedded, handle ?thread= & sent= from cancel/decline dialog: append message and switch thread
+  useEffect(() => {
+    if (!embedded) return;
+    const thread = searchParams.get("thread");
+    const sent = searchParams.get("sent");
+    if (!thread || !sent) return;
+    const text = decodeURIComponent(sent);
+    setMessagesByThread((prev) => ({
+      ...prev,
+      [thread]: [...(prev[thread] ?? []), { from: "me", text, time: "Just now" }],
+    }));
+    setActiveId(thread);
+    const next = new URLSearchParams(searchParams);
+    next.delete("sent");
+    next.delete("thread");
+    const q = next.toString();
+    router.replace(pathname + (q ? `?${q}` : ""), { scroll: false });
+  }, [embedded, pathname, searchParams, router]);
+
   const activeThread = MOCK_THREADS.find((t) => t.id === activeId) ?? null;
-  const messages = activeId ? (MOCK_MESSAGES[activeId] ?? []) : [];
+  const messages = activeId ? (messagesByThread[activeId] ?? []) : [];
+
+  if (embedded) {
+    return (
+      <div className="flex h-full w-full">
+        <ThreadList
+          threads={MOCK_THREADS}
+          activeId={activeId}
+          onSelect={setActiveId}
+        />
+        {activeThread ? (
+          <ConversationPanel
+            thread={activeThread}
+            messages={messages}
+            onSendMessage={(threadId, text) => {
+              setMessagesByThread((prev) => ({
+                ...prev,
+                [threadId]: [...(prev[threadId] ?? []), { from: "me", text, time: "Just now" }],
+              }));
+            }}
+          />
+        ) : (
+          <div className="flex min-w-0 flex-1 items-center justify-center">
+            <p className="text-sm text-muted-foreground">Select a conversation to start messaging.</p>
+          </div>
+        )}
+        {activeThread && <BookingDetailPanel thread={activeThread} />}
+      </div>
+    );
+  }
+
+  const handleSendMessage = (threadId: string, text: string) => {
+    setMessagesByThread((prev) => ({
+      ...prev,
+      [threadId]: [...(prev[threadId] ?? []), { from: "me", text, time: "Just now" }],
+    }));
+  };
 
   return (
     <div className="w-full px-4 sm:px-6">
@@ -708,7 +808,7 @@ export function MessagesClient() {
         />
 
         {activeThread ? (
-          <ConversationPanel thread={activeThread} messages={messages} />
+          <ConversationPanel thread={activeThread} messages={messages} onSendMessage={handleSendMessage} />
         ) : (
           <div className="flex min-w-0 flex-1 items-center justify-center">
             <p className="text-sm text-muted-foreground">Select a conversation to start messaging.</p>

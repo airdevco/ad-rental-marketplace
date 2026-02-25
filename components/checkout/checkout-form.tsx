@@ -191,7 +191,7 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
               <div className="space-y-4 pt-1">
                 <div className="grid gap-4 grid-cols-1 sm:grid-cols-[1fr_1fr_auto]">
                   <div className="space-y-2 min-w-0">
-                    <Label htmlFor="checkout-first">First name</Label>
+                    <Label htmlFor="checkout-first" className="text-xs font-semibold text-zinc-900">First name</Label>
                     <Input
                       id="checkout-first"
                       value={details.firstName}
@@ -202,7 +202,7 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
                     />
                   </div>
                   <div className="space-y-2 min-w-0">
-                    <Label htmlFor="checkout-last">Last name</Label>
+                    <Label htmlFor="checkout-last" className="text-xs font-semibold text-zinc-900">Last name</Label>
                     <Input
                       id="checkout-last"
                       value={details.lastName}
@@ -213,7 +213,7 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
                     />
                   </div>
                   <div className="space-y-2 min-w-[5rem] shrink-0">
-                    <Label htmlFor="checkout-age">Age</Label>
+                    <Label htmlFor="checkout-age" className="text-xs font-semibold text-zinc-900">Age</Label>
                     <Select
                       value={details.age}
                       onValueChange={(v) => setDetails((d) => ({ ...d, age: v }))}
@@ -232,7 +232,7 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="checkout-email">Email</Label>
+                  <Label htmlFor="checkout-email" className="text-xs font-semibold text-zinc-900">Email</Label>
                   <Input
                     id="checkout-email"
                     type="email"
@@ -245,7 +245,7 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
                 </div>
                 <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
                   <div className="space-y-2 min-w-0">
-                    <Label htmlFor="checkout-country">Country</Label>
+                    <Label htmlFor="checkout-country" className="text-xs font-semibold text-zinc-900">Country</Label>
                     <Select
                       value={details.phoneCountry}
                       onValueChange={(v) => setDetails((d) => ({ ...d, phoneCountry: v }))}
@@ -261,7 +261,7 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
                     </Select>
                   </div>
                   <div className="space-y-2 min-w-0">
-                    <Label htmlFor="checkout-phone">Phone number</Label>
+                    <Label htmlFor="checkout-phone" className="text-xs font-semibold text-zinc-900">Phone number</Label>
                     <Input
                       id="checkout-phone"
                       type="tel"
@@ -304,7 +304,7 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
               </p>
               <div className="mt-4 space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="checkout-card">Card number</Label>
+                  <Label htmlFor="checkout-card" className="text-xs font-semibold text-zinc-900">Card number</Label>
                   <Input
                     id="checkout-card"
                     name="card"
@@ -316,7 +316,7 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="checkout-exp">Expiration date</Label>
+                    <Label htmlFor="checkout-exp" className="text-xs font-semibold text-zinc-900">Expiration date</Label>
                     <Input
                       id="checkout-exp"
                       name="exp"
@@ -327,7 +327,7 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="checkout-cvc">Security code</Label>
+                    <Label htmlFor="checkout-cvc" className="text-xs font-semibold text-zinc-900">Security code</Label>
                     <Input
                       id="checkout-cvc"
                       name="cvc"
@@ -339,7 +339,7 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="checkout-country-pay">Country</Label>
+                  <Label htmlFor="checkout-country-pay" className="text-xs font-semibold text-zinc-900">Country</Label>
                   <Select defaultValue="us">
                     <SelectTrigger id="checkout-country-pay" className="h-10 w-full">
                       <SelectValue placeholder="Country" />
@@ -352,7 +352,7 @@ export function CheckoutForm({ rentalId }: CheckoutFormProps) {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="checkout-zip">ZIP code</Label>
+                  <Label htmlFor="checkout-zip" className="text-xs font-semibold text-zinc-900">ZIP code</Label>
                   <Input
                     id="checkout-zip"
                     name="zip"

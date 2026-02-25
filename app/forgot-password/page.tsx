@@ -29,7 +29,7 @@ export default function ForgotPasswordPage() {
         <form>
           <CardContent className="space-y-4 pb-0">
             <div className="space-y-2">
-              <Label htmlFor="forgot-email">Email</Label>
+              <Label htmlFor="forgot-email" className="text-xs font-semibold text-zinc-900">Email</Label>
               <Input
                 id="forgot-email"
                 name="email"

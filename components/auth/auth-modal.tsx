@@ -47,7 +47,7 @@ export function AuthModal({ open, onOpenChange, onSuccess }: AuthModalProps) {
           <div className="grid gap-4 py-4">
             {mode === "signup" && (
               <div className="space-y-2">
-                <Label htmlFor="auth-name">Name</Label>
+                <Label htmlFor="auth-name" className="text-xs font-semibold text-zinc-900">Name</Label>
                 <Input
                   id="auth-name"
                   name="name"
@@ -59,7 +59,7 @@ export function AuthModal({ open, onOpenChange, onSuccess }: AuthModalProps) {
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="auth-email">Email</Label>
+              <Label htmlFor="auth-email" className="text-xs font-semibold text-zinc-900">Email</Label>
               <Input
                 id="auth-email"
                 name="email"
@@ -72,7 +72,7 @@ export function AuthModal({ open, onOpenChange, onSuccess }: AuthModalProps) {
             <div className="space-y-2">
               {mode === "login" && (
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="auth-password">Password</Label>
+                  <Label htmlFor="auth-password" className="text-xs font-semibold text-zinc-900">Password</Label>
                   <Link
                     href="/forgot-password"
                     className="text-sm text-muted-foreground hover:text-foreground"
@@ -82,7 +82,7 @@ export function AuthModal({ open, onOpenChange, onSuccess }: AuthModalProps) {
                   </Link>
                 </div>
               )}
-              {mode === "signup" && <Label htmlFor="auth-password">Password</Label>}
+              {mode === "signup" && <Label htmlFor="auth-password" className="text-xs font-semibold text-zinc-900">Password</Label>}
               <Input
                 id="auth-password"
                 name="password"

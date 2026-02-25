@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   Plus,
@@ -26,6 +27,9 @@ import {
   Building,
   Crown,
   ChevronRight,
+  Home as HomeIcon,
+  BedDouble,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,14 +37,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { HostProfileForm } from "@/components/host/host-profile-form";
 
 /* -------------------------------------------------------------------------- */
 /*  Types & constants                                                          */
 /* -------------------------------------------------------------------------- */
 
-const TOTAL_STEPS = 13;
+const TOTAL_STEPS = 14;
 
 type PropertyType = {
   id: string;
@@ -75,6 +79,7 @@ const AMENITIES: Amenity[] = [
 
 type FormData = {
   propertyType: string;
+  placeType: string;
   address: string;
   guests: number;
   bedrooms: number;
@@ -87,15 +92,17 @@ type FormData = {
   blockedDates: string[];
   hostName: string;
   hostBio: string;
+  hostPhoto: string;
   stripeConnected: boolean;
 };
 
 const INITIAL_FORM: FormData = {
   propertyType: "",
+  placeType: "",
   address: "",
-  guests: 2,
-  bedrooms: 1,
-  bathrooms: 1,
+  guests: 0,
+  bedrooms: 0,
+  bathrooms: 0,
   amenities: [],
   photos: [],
   title: "",
@@ -104,6 +111,7 @@ const INITIAL_FORM: FormData = {
   blockedDates: [],
   hostName: "",
   hostBio: "",
+  hostPhoto: "",
   stripeConnected: false,
 };
 
@@ -150,7 +158,7 @@ function StepperRow({
           type="button"
           onClick={onDecrement}
           disabled={value <= min}
-          className="flex size-9 items-center justify-center rounded-full border border-zinc-300 text-zinc-700 transition-colors hover:border-zinc-900 disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex size-9 items-center justify-center rounded-full border border-zinc-200 text-zinc-700 transition-colors hover:border-zinc-900 disabled:cursor-not-allowed disabled:opacity-40"
           aria-label={`Decrease ${label}`}
         >
           <Minus className="size-4" />
@@ -159,7 +167,7 @@ function StepperRow({
         <button
           type="button"
           onClick={onIncrement}
-          className="flex size-9 items-center justify-center rounded-full border border-zinc-300 text-zinc-700 transition-colors hover:border-zinc-900"
+          className="flex size-9 items-center justify-center rounded-full border border-zinc-200 text-zinc-700 transition-colors hover:border-zinc-900"
           aria-label={`Increase ${label}`}
         >
           <Plus className="size-4" />
@@ -197,7 +205,7 @@ function StepIntro({ onContinue }: { onContinue: () => void }) {
       </div>
       <Button
         onClick={onContinue}
-        className="h-12 w-full max-w-xs rounded-[5px] bg-primary px-8 font-semibold shadow-none hover:bg-primary/90 sm:w-auto"
+        className="h-12 w-full max-w-xs rounded-[5px] bg-primary px-8 font-medium shadow-none hover:bg-primary/90 sm:w-auto"
       >
         Get started
         <ChevronRight className="size-4" />
@@ -229,16 +237,88 @@ function StepPropertyType({
               type="button"
               onClick={() => onChange(pt.id)}
               className={cn(
-                "flex flex-col items-start gap-3 rounded-xl border-2 p-4 text-left transition-all",
+                "flex flex-col items-start gap-3 rounded-xl border-[1px] border-zinc-200 p-4 text-left transition-all",
                 selected
                   ? "border-zinc-900 bg-zinc-50"
-                  : "border-zinc-200 hover:border-zinc-400"
+                  : "hover:border-zinc-400"
               )}
             >
               <Icon className={cn("size-7", selected ? "text-zinc-900" : "text-muted-foreground")} />
               <span className={cn("text-sm font-semibold", selected ? "text-zinc-900" : "text-zinc-700")}>
                 {pt.label}
               </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+type PlaceTypeOption = {
+  id: string;
+  name: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+};
+
+const PLACE_TYPE_OPTIONS: PlaceTypeOption[] = [
+  {
+    id: "entire",
+    name: "An entire place",
+    description: "Guests have the whole place to themselves. This usually includes a bedroom, bathroom, and kitchen.",
+    icon: HomeIcon,
+  },
+  {
+    id: "room",
+    name: "A room",
+    description: "Guests have their own private room for sleeping. Other spaces could be shared.",
+    icon: BedDouble,
+  },
+  {
+    id: "shared",
+    name: "A shared room in a hostel",
+    description: "Guests sleep in a room or common area that may be shared with others.",
+    icon: Users,
+  },
+];
+
+function StepPlaceType({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div>
+      <h2 className="text-2xl font-black tracking-tight text-zinc-900">What type of place will guests have?</h2>
+      <p className="mt-2 text-muted-foreground">Help guests understand what they can expect.</p>
+      <div className="mt-6 space-y-3">
+        {PLACE_TYPE_OPTIONS.map((option) => {
+          const Icon = option.icon;
+          const selected = value === option.id;
+          return (
+            <button
+              key={option.id}
+              type="button"
+              onClick={() => onChange(option.id)}
+              className={cn(
+                "flex w-full items-start gap-4 rounded-xl border-[1px] border-zinc-200 p-4 text-left transition-all",
+                selected
+                  ? "border-zinc-900 bg-zinc-50"
+                  : "hover:border-zinc-400"
+              )}
+            >
+              <Icon className={cn("mt-0.5 size-7 shrink-0", selected ? "text-zinc-900" : "text-muted-foreground")} />
+              <div className="min-w-0 flex-1">
+                <p className={cn("font-semibold", selected ? "text-zinc-900" : "text-zinc-700")}>
+                  {option.name}
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {option.description}
+                </p>
+              </div>
             </button>
           );
         })}
@@ -319,8 +399,8 @@ function StepBasics({
           label="Guests"
           sublabel="How many guests can stay?"
           value={guests}
-          min={1}
-          onDecrement={() => onChange("guests", Math.max(1, guests - 1))}
+          min={0}
+          onDecrement={() => onChange("guests", Math.max(0, guests - 1))}
           onIncrement={() => onChange("guests", guests + 1)}
         />
         <StepperRow
@@ -333,8 +413,8 @@ function StepBasics({
         <StepperRow
           label="Bathrooms"
           value={bathrooms}
-          min={1}
-          onDecrement={() => onChange("bathrooms", Math.max(1, bathrooms - 1))}
+          min={0}
+          onDecrement={() => onChange("bathrooms", Math.max(0, bathrooms - 1))}
           onIncrement={() => onChange("bathrooms", bathrooms + 1)}
         />
       </div>
@@ -371,7 +451,7 @@ function StepAmenities({
               type="button"
               onClick={() => toggle(amenity.id)}
               className={cn(
-                "flex w-fit items-center gap-2.5 rounded-xl border-2 px-4 py-3 text-left transition-all",
+                "flex w-fit items-center gap-2.5 rounded-xl border-[1px] px-4 py-3 text-left transition-all",
                 isSelected
                   ? "border-zinc-900 bg-zinc-50"
                   : "border-zinc-200 hover:border-zinc-400"
@@ -416,16 +496,7 @@ function StepPhotos({
   }
 
   function handleAddPhotoClick() {
-    const firstEmpty = slots.findIndex((url) => !url);
-    if (firstEmpty >= 0) {
-      setPendingIndex(firstEmpty);
-      fileInputRef.current?.click();
-    } else {
-      onAddSlot();
-      const newIndex = slots.length;
-      setPendingIndex(newIndex);
-      setTimeout(() => fileInputRef.current?.click(), 0);
-    }
+    onAddSlot();
   }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -464,8 +535,8 @@ function StepPhotos({
           <div
             key={i}
             className={cn(
-              "group relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-xl border-2 border-dashed transition-colors",
-              url ? "border-zinc-200" : "border-zinc-200 hover:border-zinc-400 hover:bg-zinc-50"
+              "group relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-xl border-[1px] border-dashed border-zinc-200 transition-colors",
+              url ? "border-solid" : "hover:border-zinc-400 hover:bg-zinc-50"
             )}
           >
             {url ? (
@@ -602,17 +673,17 @@ function StepPricing({
             Price per night (USD)
           </Label>
           <div className="relative">
-            <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-medium text-zinc-500">
+            <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
               $
             </span>
             <Input
               id="nightly-price"
               type="number"
-              min={10}
+              min={0}
               value={value}
               onChange={(e) => onChange(e.target.value)}
               placeholder="0"
-              className="h-14 rounded-[5px] border-zinc-200 pl-7 text-2xl font-bold shadow-none tabular-nums focus-visible:border-zinc-900 focus-visible:ring-0"
+              className="h-11 rounded-[5px] border-zinc-200 pl-7 shadow-none tabular-nums focus-visible:border-zinc-900 focus-visible:ring-0 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />
           </div>
         </div>
@@ -633,12 +704,14 @@ function StepAvailability({
   blocked: string[];
   onToggle: (date: string) => void;
 }) {
+  const [monthOffset, setMonthOffset] = useState(0);
   const today = new Date();
-  const year = today.getFullYear();
-  const month = today.getMonth();
+  const viewDate = new Date(today.getFullYear(), today.getMonth() + monthOffset, 1);
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDay = new Date(year, month, 1).getDay();
-  const monthName = today.toLocaleString("default", { month: "long", year: "numeric" });
+  const monthName = viewDate.toLocaleString("default", { month: "long", year: "numeric" });
 
   const days = Array.from({ length: daysInMonth }, (_, i) => {
     const d = i + 1;
@@ -653,7 +726,25 @@ function StepAvailability({
         Tap dates to mark them as unavailable. All other dates will be open by default.
       </p>
       <div className="mt-6 rounded-xl border border-zinc-100 p-4">
-        <p className="mb-3 text-center text-sm font-semibold text-zinc-900">{monthName}</p>
+        <div className="mb-3 flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => setMonthOffset((o) => o - 1)}
+            className="flex size-9 items-center justify-center rounded-full text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900"
+            aria-label="Previous month"
+          >
+            <ChevronRight className="size-5 rotate-180" />
+          </button>
+          <p className="text-center text-sm font-semibold text-zinc-900">{monthName}</p>
+          <button
+            type="button"
+            onClick={() => setMonthOffset((o) => o + 1)}
+            className="flex size-9 items-center justify-center rounded-full text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900"
+            aria-label="Next month"
+          >
+            <ChevronRight className="size-5" />
+          </button>
+        </div>
         <div className="grid grid-cols-7 gap-1 text-center">
           {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => (
             <div key={d} className="py-1 text-xs font-medium text-muted-foreground">{d}</div>
@@ -696,58 +787,33 @@ function StepAvailability({
 function StepHostProfile({
   name,
   bio,
+  hostPhoto,
   onNameChange,
   onBioChange,
+  onPhotoChange,
+  onPhotoClear,
 }: {
   name: string;
   bio: string;
+  hostPhoto: string;
   onNameChange: (v: string) => void;
   onBioChange: (v: string) => void;
+  onPhotoChange: (dataUrl: string) => void;
+  onPhotoClear: () => void;
 }) {
   return (
-    <div>
-      <h2 className="text-2xl font-black tracking-tight text-zinc-900">Set up your host profile</h2>
-      <p className="mt-2 text-muted-foreground">
-        Guests are more likely to book when they know who they're staying with.
-      </p>
-      <div className="mt-6 space-y-6">
-        <div className="flex flex-col items-center gap-3">
-          <Avatar className="size-20 border-2 border-zinc-200">
-            <AvatarFallback className="bg-zinc-100 text-2xl font-bold text-zinc-500">
-              {name ? name.charAt(0).toUpperCase() : "?"}
-            </AvatarFallback>
-          </Avatar>
-          <Button variant="outline" size="sm" className="rounded-[5px] shadow-none">
-            Upload photo
-          </Button>
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="host-name" className="text-xs font-semibold text-zinc-900">
-            Display name
-          </Label>
-          <Input
-            id="host-name"
-            value={name}
-            onChange={(e) => onNameChange(e.target.value)}
-            placeholder="e.g. Alex"
-            className="h-11 rounded-[5px] border-zinc-200 shadow-none focus-visible:border-zinc-900 focus-visible:ring-0"
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="host-bio" className="text-xs font-semibold text-zinc-900">
-            About you <span className="font-normal text-muted-foreground">(optional)</span>
-          </Label>
-          <Textarea
-            id="host-bio"
-            value={bio}
-            onChange={(e) => onBioChange(e.target.value)}
-            placeholder="Tell guests a bit about yourself — where you're from, what you love about your city, or what kind of host you are."
-            rows={4}
-            className="rounded-[5px] border-zinc-200 shadow-none focus-visible:border-zinc-900 focus-visible:ring-0"
-          />
-        </div>
-      </div>
-    </div>
+    <HostProfileForm
+      showHeading
+      data={{ name, bio, photo: hostPhoto }}
+      onChange={(updated) => {
+        if (updated.name !== undefined) onNameChange(updated.name);
+        if (updated.bio !== undefined) onBioChange(updated.bio);
+        if (updated.photo !== undefined) {
+          if (updated.photo === "") onPhotoClear();
+          else onPhotoChange(updated.photo);
+        }
+      }}
+    />
   );
 }
 
@@ -788,7 +854,7 @@ function StepStripe({ onSkip }: { onSkip: () => void }) {
         </div>
         <Button
           asChild
-          className="h-11 w-full rounded-[5px] bg-[#635bff] font-semibold shadow-none hover:bg-[#5146e4]"
+          className="h-11 w-full rounded-[5px] bg-[#635bff] font-medium shadow-none hover:bg-[#5146e4]"
         >
           <a href="https://stripe.com/connect" target="_blank" rel="noopener noreferrer">
             Connect Stripe
@@ -800,7 +866,7 @@ function StepStripe({ onSkip }: { onSkip: () => void }) {
           onClick={onSkip}
           className="w-full py-2 text-sm text-muted-foreground underline-offset-2 hover:text-zinc-900 hover:underline"
         >
-          Skip for now — I&apos;ll set this up later
+          I&apos;ll set this up later
         </button>
       </div>
     </div>
@@ -815,9 +881,11 @@ function StepReview({
   onPublish: () => void;
 }) {
   const propertyLabel = PROPERTY_TYPES.find((p) => p.id === form.propertyType)?.label ?? "—";
+  const placeTypeLabel = PLACE_TYPE_OPTIONS.find((p) => p.id === form.placeType)?.name ?? "—";
 
   const rows = [
     { label: "Property type", value: propertyLabel },
+    { label: "Place type", value: placeTypeLabel },
     { label: "Location", value: form.address || "—" },
     { label: "Guests", value: `${form.guests} guests · ${form.bedrooms} bed · ${form.bathrooms} bath` },
     { label: "Amenities", value: form.amenities.length ? `${form.amenities.length} selected` : "None" },
@@ -845,7 +913,7 @@ function StepReview({
       </div>
       <Button
         onClick={onPublish}
-        className="mt-6 h-12 w-full rounded-[5px] bg-primary font-semibold shadow-none hover:bg-primary/90"
+        className="mt-6 h-12 w-full rounded-[5px] bg-primary font-medium shadow-none hover:bg-primary/90"
       >
         Publish listing
       </Button>
@@ -855,27 +923,27 @@ function StepReview({
 
 function StepSuccess() {
   return (
-    <div className="flex flex-col items-center justify-center gap-6 py-12 text-center">
+    <div className="flex flex-col items-center justify-center gap-5 py-6 text-center">
       <div className="flex size-20 items-center justify-center rounded-full bg-green-50">
         <Check className="size-10 text-green-600" />
       </div>
-      <div className="max-w-sm">
+      <div className="max-w-[440px]">
         <h2 className="text-2xl font-black tracking-tight text-zinc-900">Your listing is live!</h2>
-        <p className="mt-3 text-muted-foreground">
+        <p className="mt-3 max-w-[440px] text-muted-foreground">
           Congratulations! Your home is now visible to guests on Rento. You can manage it from your seller dashboard.
         </p>
       </div>
       <div className="flex flex-col gap-3 w-full max-w-xs">
         <Button
           asChild
-          className="h-11 rounded-[5px] bg-primary font-semibold shadow-none hover:bg-primary/90"
+          className="h-11 rounded-[5px] bg-primary font-medium shadow-none hover:bg-primary/90"
         >
           <Link href="/dashboard/seller">Go to seller dashboard</Link>
         </Button>
         <Button
           asChild
           variant="outline"
-          className="h-11 rounded-[5px] font-semibold shadow-none"
+          className="h-11 rounded-[5px] font-medium shadow-none"
         >
           <Link href="/">Back to home</Link>
         </Button>
@@ -889,15 +957,26 @@ function StepSuccess() {
 /* -------------------------------------------------------------------------- */
 
 export function OnboardingWizard() {
-  const [step, setStep] = useState(1);
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const stepParam = searchParams.get("step");
+  const stepFromUrl = stepParam ? Math.min(TOTAL_STEPS, Math.max(1, parseInt(stepParam, 10) || 1)) : 1;
+  const step = stepFromUrl;
+
   const [published, setPublished] = useState(false);
   const [form, setForm] = useState<FormData>(INITIAL_FORM);
 
+  function goToStep(s: number) {
+    const nextStep = Math.min(TOTAL_STEPS, Math.max(1, s));
+    router.replace(`${pathname}?step=${nextStep}`);
+  }
+
   function next() {
-    setStep((s) => Math.min(s + 1, TOTAL_STEPS));
+    goToStep(step + 1);
   }
   function back() {
-    setStep((s) => Math.max(s - 1, 1));
+    goToStep(step - 1);
   }
 
   function updateForm<K extends keyof FormData>(key: K, value: FormData[K]) {
@@ -954,18 +1033,35 @@ export function OnboardingWizard() {
   const isIntro = step === 1;
 
   return (
-    <div className="flex min-h-screen flex-col overflow-x-hidden">
-      {/* Progress bar */}
-      {!isIntro && (
-        <div className="fixed left-0 right-0 top-0 z-50 h-1 bg-zinc-100">
-          <div
-            className="h-full bg-primary transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          />
+    <div className="flex h-screen flex-col overflow-hidden">
+      {/* Progress bar — sits above fixed bar as its top border */}
+      {!isIntro && step < 14 && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 flex flex-col border-t border-zinc-100 bg-white pb-[env(safe-area-inset-bottom)]">
+          <div className="h-1 w-full bg-zinc-100">
+            <div
+              className="h-full bg-primary transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <div className="mx-auto flex max-w-lg w-full items-center justify-between gap-4 px-4 py-4">
+            <Button
+              variant="outline"
+              onClick={back}
+              className="h-11 w-28 rounded-[5px] font-medium shadow-none"
+            >
+              Back
+            </Button>
+            {step !== 13 && (
+              <Button
+                onClick={next}
+                className="h-11 min-w-28 rounded-[5px] bg-primary font-medium shadow-none hover:bg-primary/90"
+              >
+                Continue
+              </Button>
+            )}
+          </div>
         </div>
       )}
-
-      {/* Header */}
       {!isIntro && (
         <div className="fixed left-0 right-0 top-0 z-40 flex h-16 items-center border-b border-zinc-100 bg-white px-4 sm:px-6">
           <div className="container mx-auto flex max-w-[700px] items-center justify-between px-0">
@@ -989,18 +1085,25 @@ export function OnboardingWizard() {
           </div>
         </div>
       )}
-
-      {/* Content — no flex-1 to avoid extra page height / scroll when content is short */}
-      <main className={cn(isIntro ? "flex min-h-0 flex-1 items-center justify-center px-4 py-8" : "px-4 pt-24 pb-32")}>
-        <div className="mx-auto w-full max-w-lg">
+      {/* Content — flex-1 min-h-0 so it fills viewport without causing page scroll; scrolls only when content overflows */}
+      <main
+        className={cn(
+          "flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-24",
+          isIntro ? "items-center justify-center pt-16 sm:pt-24" : "pt-24"
+        )}
+      >
+        <div className={cn("mx-auto w-full max-w-lg", isIntro && "flex flex-1 flex-col items-center justify-center")}>
           {step === 1 && <StepIntro onContinue={next} />}
           {step === 2 && (
             <StepPropertyType value={form.propertyType} onChange={(v) => updateForm("propertyType", v)} />
           )}
           {step === 3 && (
-            <StepLocation value={form.address} onChange={(v) => updateForm("address", v)} />
+            <StepPlaceType value={form.placeType} onChange={(v) => updateForm("placeType", v)} />
           )}
           {step === 4 && (
+            <StepLocation value={form.address} onChange={(v) => updateForm("address", v)} />
+          )}
+          {step === 5 && (
             <StepBasics
               guests={form.guests}
               bedrooms={form.bedrooms}
@@ -1008,57 +1111,37 @@ export function OnboardingWizard() {
               onChange={(field, v) => updateForm(field, v)}
             />
           )}
-          {step === 5 && (
+          {step === 6 && (
             <StepAmenities selected={form.amenities} onChange={(v) => updateForm("amenities", v)} />
           )}
-          {step === 6 && <StepPhotos photos={form.photos} onPhotoAdd={addPhotoAt} onPhotoRemove={removePhotoAt} onAddSlot={addPhotoSlot} />}
-          {step === 7 && (
+          {step === 7 && <StepPhotos photos={form.photos} onPhotoAdd={addPhotoAt} onPhotoRemove={removePhotoAt} onAddSlot={addPhotoSlot} />}
+          {step === 8 && (
             <StepTitle value={form.title} onChange={(v) => updateForm("title", v)} />
           )}
-          {step === 8 && (
+          {step === 9 && (
             <StepDescription value={form.description} onChange={(v) => updateForm("description", v)} />
           )}
-          {step === 9 && (
+          {step === 10 && (
             <StepPricing value={form.pricePerNight} onChange={(v) => updateForm("pricePerNight", v)} />
           )}
-          {step === 10 && (
+          {step === 11 && (
             <StepAvailability blocked={form.blockedDates} onToggle={toggleDate} />
           )}
-          {step === 11 && (
+          {step === 12 && (
             <StepHostProfile
               name={form.hostName}
               bio={form.hostBio}
+              hostPhoto={form.hostPhoto}
               onNameChange={(v) => updateForm("hostName", v)}
               onBioChange={(v) => updateForm("hostBio", v)}
+              onPhotoChange={(v) => updateForm("hostPhoto", v)}
+              onPhotoClear={() => updateForm("hostPhoto", "")}
             />
           )}
-          {step === 12 && <StepStripe onSkip={next} />}
-          {step === 13 && <StepReview form={form} onPublish={handlePublish} />}
+          {step === 13 && <StepStripe onSkip={next} />}
+          {step === 14 && <StepReview form={form} onPublish={handlePublish} />}
         </div>
       </main>
-
-      {/* Footer — Back / Continue */}
-      {!isIntro && step < 13 && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-zinc-100 bg-white pb-[env(safe-area-inset-bottom)]">
-          <div className="mx-auto flex max-w-[700px] items-center justify-between gap-4 px-4 py-4 sm:px-6">
-            <Button
-              variant="outline"
-              onClick={back}
-              className="h-11 w-28 rounded-[5px] font-semibold shadow-none"
-            >
-              Back
-            </Button>
-            {step !== 12 && (
-              <Button
-                onClick={next}
-                className="h-11 min-w-28 rounded-[5px] bg-primary font-semibold shadow-none hover:bg-primary/90"
-              >
-                Continue
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

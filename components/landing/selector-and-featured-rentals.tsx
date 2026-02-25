@@ -64,7 +64,7 @@ export function SelectorAndFeaturedRentals() {
         <div className="mt-10 text-center">
           <Button
             variant="outline"
-            className="h-11 w-fit rounded-[5px] px-4 font-semibold text-zinc-700 shadow-none hover:bg-zinc-100"
+            className="h-11 w-fit rounded-[5px] px-4 font-medium text-zinc-700 shadow-none hover:bg-zinc-100"
             asChild
           >
             <Link href="/search">View all homes</Link>

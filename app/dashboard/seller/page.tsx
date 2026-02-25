@@ -7,5 +7,9 @@ export const metadata: Metadata = {
 };
 
 export default function SellerDashboardPage() {
-  return <SellerDashboardClient />;
+  return (
+    <div className="-mt-16">
+      <SellerDashboardClient />
+    </div>
+  );
 }

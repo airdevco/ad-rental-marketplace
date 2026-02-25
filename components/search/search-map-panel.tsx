@@ -104,7 +104,7 @@ export function SearchMapPanel({ className }: { className?: string }) {
           <button
             type="button"
             onClick={() => setMapOpen((v) => !v)}
-            className="flex items-center gap-2 rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-semibold text-white shadow-lg transition-transform active:scale-95"
+            className="flex items-center gap-2 rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white shadow-lg transition-transform active:scale-95"
           >
             {mapOpen ? (
               <>

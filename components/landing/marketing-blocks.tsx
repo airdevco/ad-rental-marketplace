@@ -269,7 +269,7 @@ export function HostCta() {
             </div>
 
             <Button
-              className="mt-8 h-11 w-fit gap-1.5 rounded-[5px] px-4 font-semibold shadow-none"
+              className="mt-8 h-11 w-fit gap-1.5 rounded-[5px] px-4 font-medium shadow-none"
               asChild
             >
               <Link href="/dashboard/seller">

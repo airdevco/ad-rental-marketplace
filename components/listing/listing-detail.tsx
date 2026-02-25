@@ -491,7 +491,7 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
             <Button
               asChild
               variant="outline"
-              className="h-11 w-full shrink-0 rounded-[5px] px-4 font-semibold text-zinc-700 shadow-none hover:bg-zinc-100 sm:w-fit"
+              className="h-11 w-full shrink-0 rounded-[5px] px-4 font-medium text-zinc-700 shadow-none hover:bg-zinc-100 sm:w-fit"
             >
               <Link href={`/messages?with=${listing.hostId ?? ""}`}>Contact host</Link>
             </Button>
@@ -672,7 +672,7 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
             </div>
             <Button
               variant="outline"
-              className="mt-4 h-11 w-fit rounded-[5px] px-4 font-semibold text-zinc-700 shadow-none hover:bg-zinc-100"
+              className="mt-4 h-11 w-fit rounded-[5px] px-4 font-medium text-zinc-700 shadow-none hover:bg-zinc-100"
               onClick={() => {
                 setScrollToReviewIndex(null);
                 setReviewsDialogOpen(true);
@@ -848,7 +848,7 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
               </div>
 
               <div className="px-5 py-3">
-                <Button asChild className="h-12 w-full rounded-[5px] bg-primary hover:bg-primary/90 font-semibold">
+                <Button asChild className="h-12 w-full rounded-[5px] bg-primary hover:bg-primary/90 font-medium">
                   <Link href={`/checkout?listingId=${id}`}>Reserve</Link>
                 </Button>
               </div>
@@ -895,7 +895,7 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
               );
             })()}
           </button>
-          <Button asChild className="h-12 shrink-0 rounded-[5px] bg-primary px-6 font-semibold hover:bg-primary/90">
+          <Button asChild className="h-12 shrink-0 rounded-[5px] bg-primary px-6 font-medium hover:bg-primary/90">
             <Link href={`/checkout?listingId=${id}`}>Reserve</Link>
           </Button>
         </div>
@@ -1002,7 +1002,7 @@ export function ListingDetail({ listing, id }: { listing: VehicleListing; id: st
                 </div>
               </div>
               <div className="pt-4">
-                <Button asChild className="h-12 w-full rounded-[5px] bg-primary hover:bg-primary/90 font-semibold">
+                <Button asChild className="h-12 w-full rounded-[5px] bg-primary hover:bg-primary/90 font-medium">
                   <Link href={`/checkout?listingId=${id}`} onClick={() => setBookingSheetOpen(false)}>Reserve</Link>
                 </Button>
               </div>

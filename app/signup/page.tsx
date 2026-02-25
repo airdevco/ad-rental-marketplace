@@ -30,7 +30,7 @@ export default function SignupPage() {
           <CardContent className="space-y-4 pb-0">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="signup-first-name">First name</Label>
+                <Label htmlFor="signup-first-name" className="text-xs font-semibold text-zinc-900">First name</Label>
                 <Input
                   id="signup-first-name"
                   name="firstName"
@@ -42,7 +42,7 @@ export default function SignupPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="signup-last-name">Last name</Label>
+                <Label htmlFor="signup-last-name" className="text-xs font-semibold text-zinc-900">Last name</Label>
                 <Input
                   id="signup-last-name"
                   name="lastName"
@@ -55,7 +55,7 @@ export default function SignupPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="signup-email">Email</Label>
+              <Label htmlFor="signup-email" className="text-xs font-semibold text-zinc-900">Email</Label>
               <Input
                 id="signup-email"
                 name="email"
@@ -67,7 +67,7 @@ export default function SignupPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="signup-password">Password</Label>
+              <Label htmlFor="signup-password" className="text-xs font-semibold text-zinc-900">Password</Label>
               <Input
                 id="signup-password"
                 name="password"

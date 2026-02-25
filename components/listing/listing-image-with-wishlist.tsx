@@ -8,9 +8,13 @@ import { cn } from "@/lib/utils";
 type ListingImageWithWishlistProps = {
   images: string[];
   alt: string;
-  listingId: string;
+  listingId?: string;
   sizes?: string;
   className?: string;
+  /** When false, the wishlist heart is hidden (e.g. dashboard). */
+  showWishlist?: boolean;
+  /** Optional overlay on the image (e.g. status badge). Rendered top-left when provided. */
+  topOverlay?: React.ReactNode;
 };
 
 /** Reusable listing image carousel with wishlist heart, nav arrows, and dots */
@@ -20,6 +24,8 @@ export function ListingImageWithWishlist({
   listingId,
   sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw",
   className,
+  showWishlist = true,
+  topOverlay,
 }: ListingImageWithWishlistProps) {
   const len = images.length;
   const hasMultiple = len > 1;
@@ -110,23 +116,30 @@ export function ListingImageWithWishlist({
         ))}
       </div>
 
-      {/* Wishlist heart - upper right */}
-      <button
-        type="button"
-        onClick={handleWishlistClick}
-        aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-        className="absolute right-2 top-2 z-10 flex size-9 items-center justify-center p-1 transition-transform duration-200 hover:scale-110 focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-      >
-        <Heart
-          className={cn(
-            "size-5 transition-colors duration-200",
-            isWishlisted
-              ? "fill-red-500 stroke-red-500"
-              : "fill-zinc-600 stroke-white stroke-[1]"
-          )}
-          aria-hidden
-        />
-      </button>
+      {/* Optional overlay (e.g. status badge) - top right */}
+      {topOverlay && (
+        <div className="absolute right-2 top-2 z-10">{topOverlay}</div>
+      )}
+
+      {/* Wishlist heart - upper right (hidden when showWishlist is false) */}
+      {showWishlist && (
+        <button
+          type="button"
+          onClick={handleWishlistClick}
+          aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          className="absolute right-2 top-2 z-10 flex size-9 items-center justify-center p-1 transition-transform duration-200 hover:scale-110 focus-visible:outline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          <Heart
+            className={cn(
+              "size-5 transition-colors duration-200",
+              isWishlisted
+                ? "fill-red-500 stroke-red-500"
+                : "fill-zinc-600 stroke-white stroke-[1]"
+            )}
+            aria-hidden
+          />
+        </button>
+      )}
 
       {/* Left/Right nav buttons - scale with tile on small viewports */}
       {hasMultiple && (
