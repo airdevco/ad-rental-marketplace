@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { OnboardingWizard } from "@/components/host/onboarding-wizard";
 
 export const metadata: Metadata = {
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function BecomeAHostPage() {
-  return <OnboardingWizard />;
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><div className="text-sm text-zinc-500">Loading…</div></div>}>
+      <OnboardingWizard />
+    </Suspense>
+  );
 }

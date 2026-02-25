@@ -168,7 +168,7 @@ const MOCK_BOOKINGS: AdminBooking[] = [
 const MOCK_REVIEWS: AdminReview[] = [
   { id: "r1", author: "Alex Chen", authorId: "u2", authorPhoto: BUYER_PHOTO, listing: "Cozy Studio in the Mission", listingId: "l1", rating: 5, date: "Feb 2026", text: "Absolutely wonderful stay. Jamie was incredibly welcoming and the studio was spotless.", flagged: false },
   { id: "r2", author: "Sam Torres", authorId: "u5", listing: "Sunny 1BR in Hayes Valley", listingId: "l2", rating: 4, date: "Jan 2026", text: "Great location, clean and comfortable. Minor issue with the Wi-Fi but otherwise perfect.", flagged: false },
-  { id: "r3", author: "Jordan Park", authorId: "u4", guestPhoto: PHOTO_4, listing: "Downtown Loft with Views", listingId: "l3", rating: 2, date: "Jan 2026", text: "This is terrible and I want my money back. Complete scam listing. DO NOT BOOK.", flagged: true },
+  { id: "r3", author: "Jordan Park", authorId: "u4", authorPhoto: PHOTO_4, listing: "Downtown Loft with Views", listingId: "l3", rating: 2, date: "Jan 2026", text: "This is terrible and I want my money back. Complete scam listing. DO NOT BOOK.", flagged: true },
   { id: "r4", author: "Alex Chen", authorId: "u2", authorPhoto: BUYER_PHOTO, listing: "Modern Room near BART", listingId: "l4", rating: 5, date: "Dec 2025", text: "Riley's place was exactly as described. Super convenient for BART access.", flagged: false },
   { id: "r5", author: "Sam Torres", authorId: "u5", listing: "Beach House Getaway", listingId: "l5", rating: 5, date: "Nov 2025", text: "Breathtaking views and a perfectly equipped house. Would return in a heartbeat.", flagged: false },
 ];
